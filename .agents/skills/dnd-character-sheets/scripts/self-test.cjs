@@ -95,6 +95,7 @@ assert.equal(first.base.spellcasting.dc,12);assert.equal(first.base.resources.in
 const wstats={str:9,dex:14,con:14,int:16,wis:12,cha:10};
 const wsheet={name:{value:'Третий персонаж'},info:{charClass:{value:'Волшебник'},level:{value:2},race:{value:'Эльф'},background:{value:'Дворянин'},size:{value:'medium'}},stats:Object.fromEntries(Object.entries(wstats).map(([key,score])=>[key,{score}])),skills:Object.fromEntries(Object.entries(E.SKILLS).map(([key,[,base]])=>[key,{baseStat:base,...(key==='arcana'?{isProf:1}:{})}])),vitality:{speed:{value:'30'},darkvision:{value:'60'}},coins:{gp:{value:34}},prof:{'weapon-simple':{value:true}},text:{equipment:{value:{data:{type:'doc',content:[{type:'paragraph',content:[{type:'text',text:'2 кинжала, магическая фокусировка: боевой посох'}]}]}}}}};
 const wroot={edition:'2024',data:JSON.stringify(wsheet),dndBratislavaBuilder:{fields:{subrace:'Высший эльф'},state:{spells:{cantrips:['mage-hand','fire-bolt'],prepared:['mage-armor','disguise-self','fog-cloud','burning-hands','ice-knife']}}}};
+wroot.dndBratislavaBuilder.state.spells.spellbook=['mage-armor','disguise-self','fog-cloud','burning-hands','ice-knife','unseen-servant'];
 const third=E.build(wroot,{level2Spell:'ice-knife',wizardScholar:'Магия'},spells);
 assert.equal(third.base.vitality.hpMax,8);assert.equal(third.next.vitality.hpMax,14);
 assert.equal(third.base.spellcasting.slots,2);assert.equal(third.next.spellcasting.slots,3);
@@ -102,6 +103,12 @@ assert.equal(third.base.spellcasting.dc,13);assert.equal(third.base.skills.arcan
 const staff=third.base.weaponRows.find(w=>w.rule==='quarterstaff');
 assert(staff&&staff.attackType==='Ближняя'&&staff.attackFormula==='d20 + СИЛ (−1) + НАВ (+2)'&&staff.damage==='1d6−1');
 const wsections=third.main.flatMap(p=>p.columns.flat());
+const book=wsections.find(b=>b.title==='Книга заклинаний');
+assert.equal(book.rows.length,6);
+assert.deepEqual(book.rows.find(row=>row[0].startsWith('Доспехи мага')).slice(2),['Да','Нет']);
+assert.deepEqual(book.rows.find(row=>row[0].startsWith('Невидимый слуга')).slice(2),['Нет','Да']);
+assert.match(book.rows.find(row=>row[0].startsWith('Огненные ладони'))[1],/Сл 13/);
+assert(book.rows.every(row=>row[1]));
 assert(wsections.find(b=>b.title==='Высший эльф').paragraphs.join(' ').includes('Транс'));
 assert(wsections.find(b=>b.title==='Знаток ритуалов').paragraphs[0].startsWith('<b>Пассивно · без затрат.</b>')&&wsections.find(b=>b.title==='Знаток ритуалов').cost==null);
 assert(wsections.find(b=>b.title==='Огненный снаряд').paragraphs[0].startsWith('<b>Концентрация:</b> нет<br><b>Основное действие · без затрат.</b>'));

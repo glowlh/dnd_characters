@@ -90,7 +90,8 @@
   if(profile.kind==='bard'&&level>=2&&expertise.length!==2)throw Error('Для 2-го уровня барда выберите два навыка компетентности в JSON или настройках.');
   if(profile.kind==='bard'&&level>=2&&expertise.some(name=>!Object.values(skills).find(x=>x.name===name)?.proficient))throw Error('Компетентность требует владения выбранным навыком.');
   const spellState=state.spells;
-  const cards=(source.root.spells?.prepared||[]).map(id=>Object.keys(spells).find(k=>spells[k].id===id));
+  const keyForId=id=>Object.keys(spells).find(k=>spells[k].id===id);
+  const cards=(source.root.spells?.prepared||[]).map(keyForId);
   if(!spellState&&cards.some(k=>!k))throw Error('Не удалось разрешить ID заклинаний в справочнике.');
   const inherent=unique([...(rock?['mending','prestidigitation']:[]),...(profile.kind==='artificer'?['mending']:[])]);
   const chosenCantrips=spellState?.cantrips||cards.filter(k=>spells[k]?.level===0&&!inherent.includes(k));
@@ -100,7 +101,8 @@
   if(currentPrepared.length>profile.prepared[0]&&(!extra||!currentPrepared.includes(extra)))throw Error('Укажите выбранное заклинание второго уровня в level2Spell.');
   const prepared=level===1?currentPrepared.filter(k=>k!==extra):unique([...currentPrepared,...(extra?[extra]:[])]);
   if(prepared.length!==profile.prepared[level-1])throw Error('Число подготовленных заклинаний не соответствует уровню '+level+'; проверьте выборы.');
-  for(const key of [...cantrips,...prepared])if(!spells[key])throw Error('Нет полного описания '+key+' в справочнике.');
+  const spellbook=profile.kind==='wizard'?unique(spellState?.spellbook??(source.root.spells?.book||[]).map(id=>keyForId(id)??id)):[];
+  for(const key of [...cantrips,...prepared,...spellbook])if(!spells[key])throw Error('Нет полного описания '+key+' в справочнике.');
   const spellmod=stats[profile.ability].mod;
   const speed=Number(value(s.vitality?.speed)||30),equipment=inventory(source);
   const vitality={hpMax:profile.die+stats.con.mod+(level-1)*Math.max(1,Math.floor(profile.die/2)+1+stats.con.mod),hitDice:level+'d'+profile.die,hitDie:profile.die,temp:Number(value(s.vitality?.['hp-temp'])||0)};
@@ -111,7 +113,7 @@
   const weaknessEffect=config.weaknessEffect??(effectStart>=0?weakness.slice(effectStart).trim():'');
   return {identity:{name:source.name,className,species,lineage:f.subrace||'',background:value(s.info.background)||f.background||'',playerName:value(s.info.playerName),size:value(s.info.size)==='small'?'Маленький':'Средний'},level,profile,abilities:stats,pb,skills,expertise,
    movement:{feet:speed,cells:speed/5,boostedCells:(speed+10)/5},combat:{ac:armor(source,stats,config),initiative:signed(stats.dex.mod),passivePerception:10+skills.perception.total,darkvisionCells:Number(value(s.vitality?.darkvision)||0)/5},vitality,
-   spellcasting:{ability:ABILITIES[profile.ability],mod:spellmod,dc:8+pb+spellmod,attack:pb+spellmod,attackSigned:signed(pb+spellmod),slots:profile.slots[level-1],cantrips,prepared},
+   spellcasting:{ability:ABILITIES[profile.ability],mod:spellmod,dc:8+pb+spellmod,attack:pb+spellmod,attackSigned:signed(pb+spellmod),slots:profile.slots[level-1],cantrips,prepared,spellbook},
    resources:{inspiration:Math.max(1,stats.cha.mod),tinkering:Math.max(1,stats.int.mod)},
    narrative:{hook:f.characterHook||plain(s.text?.['notes-1']?.value?.data),reason:f.characterReason||plain(s.text?.quests?.value?.data),past:f.characterPast||plain(s.text?.background?.value?.data),weakness:effectStart>=0?weakness.slice(0,effectStart).trim():weakness,weaknessEffect,appearance:f.appearance||plain(s.text?.appearance?.value?.data)},
    equipment,weaponRows,weaponProficiencies:[['Простое оружие',Boolean(value(s.prof?.['weapon-simple']))],['Воинское оружие',Boolean(value(s.prof?.['weapon-martial']))]],coins:Object.entries(coinNames).map(([key,label])=>[label,Number(value(s.coins?.[key])||0)]),proficiencies:plain(s.text?.prof?.value?.data),
@@ -133,22 +135,22 @@
  }
  const turnAware=b=>({...b,paragraphs:(b.paragraphs||[]).map(withTurns),text:(b.text||[]).map(withTurns)});
  function actionLabel(sp){const t=String(sp.castingTime||'');if(t.startsWith('Действие'))return 'Основное действие';if(t.startsWith('Бонусное действие'))return 'Бонусное действие';if(t.startsWith('Реакция'))return 'Реакция';return 'Вне боя';}
+ function isRitual(sp){return /ритуал/i.test(sp.castingTime)||/ритуал/i.test(sp.school);}
  function costLabel(sp){
   if(sp.level===0)return 'без затрат';
-  const ritual=/ритуал/i.test(sp.castingTime)||/ритуал/i.test(sp.school);
-  return 'ячейка '+sp.level+'-го уровня'+(ritual?' или ритуал (без ячейки)':'');
+  return 'ячейка '+sp.level+'-го уровня'+(isRitual(sp)?' или ритуал (без ячейки)':'');
  }
  function costMark(sp){
   if(sp.level===0)return null;
-  return (/ритуал/i.test(sp.castingTime)||/ритуал/i.test(sp.school))?'ячейка · ритуал':'ячейка';
+  return isRitual(sp)?'ячейка · ритуал':'ячейка';
  }
  function spellBlock(key,catalog){
   const sp=catalog[key],duration=String(sp.duration||''),concentrationTag=/^Концентрация(?:\s*[,;:]\s*|\s+|$)/i;
   return {title:sp.name,cost:costMark(sp),paragraphs:[`<b>Концентрация:</b> ${concentrationTag.test(duration)?'да':'нет'}<br><b>${actionLabel(sp)} · ${costLabel(sp)}.</b> ${sp.level===0?'Заговор':'Уровень '+sp.level} · ${sp.school}<br><b>Сотворение:</b> ${sp.castingTime} · <b>Дистанция:</b> ${sp.range}<br><b>Компоненты:</b> ${components(sp.components)}<br><b>Длительность:</b> ${withTurns(duration.replace(concentrationTag,''))}`,...sp.body.matchAll(/<p>(.*?)<\/p>/gs)].map(x=>Array.isArray(x)?x[1]:x)};
  }
- function summaryOf(sp){
-  if(sp.summary)return sp.summary;
-  const text=String(sp.body||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+ function summaryOf(sp,dc){
+  if(sp.summary)return sp.summary.replaceAll('{{spellcasting.dc}}',String(dc));
+  const text=String(sp.body||'').replaceAll('{{spellcasting.dc}}',String(dc)).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
   return text.length>90?text.slice(0,90).replace(/\s\S*$/,'')+'…':text;
  }
  function equipmentParagraphs(c){
@@ -191,10 +193,17 @@
    [{...block('Владения и языки',c.proficiencies,'Оружие: '+c.weaponProficiencies.map(([name,owned])=>name.toLowerCase()+' — '+(owned?'владение есть':'нет')).join('; ')+'. Владение конкретным оружием видно по НАВ в формуле атаки.'),summary:true},block('Снаряжение',...equipmentParagraphs(c))],
    [...(kind==='artificer'?[table('Быстрое изготовление · освоенные наборы',[['Плотника','Лестница, факел'],['Резчика','Дубинка, палица, посох'],['Каменщика','Блок и лебёдка'],['Кузнеца','Шарики, ведро, калтропы, крюк, котёл'],['Ремонтника','Колокольчик, лопата, трутница']].filter(([name])=>c.selections.tools.some(x=>x.toLowerCase().includes(name.toLowerCase()))||name==='Ремонтника'))]:[]),...(config.equipmentProfiles?.length?[block('Профили оружия',...config.equipmentProfiles.map(x=>`${x.match}: профиль ${WEAPONS[x.rule]?.name||x.rule}; владение — ${x.proficient?'да':'не подтверждено'}; магическая прибавка ${signed(x.magicBonus||0)}. Профиль — согласованное решение для предмета без характеристик в исходных данных.`))]:[])]
   ]};
+  if(c.spellcasting.spellbook.length){
+   const bookRows=c.spellcasting.spellbook.map(key=>{
+    const spell=catalog[key];
+    return [spell.name+' · '+spell.level+'-й ур.',summaryOf(spell,c.spellcasting.dc),c.spellcasting.prepared.includes(key)?'Да':'Нет',isRitual(spell)?'Да':'Нет'];
+   });
+   gear.columns[1].push({...table('Книга заклинаний',bookRows,['Заклинание','Краткий эффект','Подгот.','Ритуал']),summary:true});
+  }
   gear.columns=gear.columns.filter(column=>column.length);
   const all=[...c.spellcasting.cantrips,...c.spellcasting.prepared].map(k=>spellBlock(k,catalog));
   const spellPage={title:'Способности и заклинания · '+c.identity.name,subtitle:`${c.identity.className} ${c.level}-го уровня · заговоров ${c.spellcasting.cantrips.length} · подготовлено ${c.spellcasting.prepared.length}`,label:'Способности и заклинания · '+c.level+'-й уровень',badge:'',ctx:c,columns:[[],[]]};
-  spellPage.columns[0].push({...table('Заклинания · краткий список',[...c.spellcasting.cantrips,...c.spellcasting.prepared].map(k=>{const sp=catalog[k];return [sp.name+(sp.level===0?' · заговор':' · '+sp.level+'-й ур.'),summaryOf(sp),String(sp.castingTime).split(';')[0]];}),['Заклинание','Суть','Время']),summary:true},spellUsage,classFeature);
+  spellPage.columns[0].push({...table('Заклинания · краткий список',[...c.spellcasting.cantrips,...c.spellcasting.prepared].map(k=>{const sp=catalog[k];return [sp.name+(sp.level===0?' · заговор':' · '+sp.level+'-й ур.'),summaryOf(sp,c.spellcasting.dc),String(sp.castingTime).split(';')[0]];}),['Заклинание','Суть','Время']),summary:true},spellUsage,classFeature);
   let weights=[JSON.stringify(spellPage.columns[0]).length,0];for(const sp of all){const col=weights[0]<=weights[1]?0:1;spellPage.columns[col].push(sp);weights[col]+=JSON.stringify(sp).length;}
   return [page,spellPage,gear];
  }

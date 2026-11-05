@@ -9,6 +9,16 @@ sheet.prof={'weapon-simple':{value:true},'weapon-martial':{value:false}};
 root.data=JSON.stringify(sheet);
 const config={level2Spell:'command'};
 const first=E.build(root,config,spells);
+const humanSheet={...sheet,info:{...sheet.info,race:{value:'Человек'}}};
+const humanRoot={...root,data:JSON.stringify(humanSheet),dndBratislavaBuilder:{
+ ...root.dndBratislavaBuilder,fields:{...root.dndBratislavaBuilder.fields,humanOriginFeat:'Бдительный'}
+}};
+const human=E.build(humanRoot,config,spells);
+assert.equal(human.base.combat.initiative,'+4');
+assert.equal(human.next.combat.initiative,human.base.combat.initiative);
+assert(human.main[0].columns.flat().find(b=>b.title==='Человек').paragraphs.join(' ').includes('Героическое вдохновение'));
+assert(human.main[0].columns.flat().some(b=>b.title==='Бдительный'));
+assert.equal(first.base.combat.initiative,'+2');
 const replacement=E.build(root,{...config,cantripReplacements:{'animate-skull':'vicious-mockery'}},spells);
 assert.deepEqual(replacement.base.spellcasting.cantrips,['friends','vicious-mockery']);
 assert.deepEqual(replacement.next.spellcasting.cantrips,replacement.base.spellcasting.cantrips);

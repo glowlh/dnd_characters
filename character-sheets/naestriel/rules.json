@@ -1,25 +1,25 @@
 {
   "rulesEdition": "2024",
   "level2Spell": "command",
-  "cantripReplacements": {
-    "animate-skull": "vicious-mockery"
-  },
   "weaknessEffect": "Из-за частичной потери памяти Наэстриель совершает проверки Интеллекта (История) с помехой.",
   "equipmentProfiles": [],
   "sources": [
-    "SecretsOfSokolKeep/heroes/Настя - Наэстриель.json",
-    "tmp/Конструктор персонажа D&D 5.5e – v6.2.html (SPELL_EFFECTS_RU, SPELL_DETAILS_SRD)",
+    "heroes/Настя - Наэстриель.json",
     "https://www.dndbeyond.com/sources/dnd/br-2024/character-classes",
     "https://www.dndbeyond.com/spells/2619216-vicious-mockery",
-    "https://www.dndbeyond.com/posts/2017-how-eberron-forge-of-the-artificer-reimagines",
-    "https://roll20.net/compendium/dnd5e/Spells%3AFriends?expansion=32231"
+    "https://www.dndbeyond.com/sources/dnd/br-2024/character-origins#Human",
+    "https://www.dndbeyond.com/sources/dnd/br-2024/feats#Alert",
+    "https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary#HeroicInspiration",
+    "https://www.dndbeyond.com/sources/dnd/br-2024/spell-descriptions",
+    "https://roll20.net/compendium/dnd5e/Spells%3AFriends?expansion=32231",
+    "https://roll20.net/compendium/dnd5e/Backgrounds%3ACharlatan?expansion=32231"
   ],
   "notes": [
     "«Приказ» добавлен на 2-м уровне по явному выбору игрока; на 1-м подготовлены Волна грома, Героизм, Диссонирующий шёпот, Невидимый слуга.",
-    "Ченжлинг — версия Eberron: Forge of the Artificer: преимущество на проверки Харизмы в изменённом облике.",
+    "В новом экспорте Наэстриель — человек: Проницательность от «Умелого» и «Бдительный» от «Гибкого». Инициатива +4 = Ловкость +2 и бонус владения +2 на обоих уровнях.",
     "«Дружба»: дистанция 10 футов (2 клетки) по PHB 2024, а не «в пределах видимости» из карточки конструктора.",
-    "По выбору пользователя сторонний заговор «Оживлённый череп» заменён официальным заговором барда «Злая насмешка» (PHB 2024, с. 337).",
+    "«Злая насмешка» и «Дружба» уже выбраны в новом экспорте.",
     "Воровской жаргон — редкий язык, сохранён по явному выбору игрока.",
-    "Компетентность (Убеждение, Выживание) и «Мастер на все руки» — умения барда 2-го уровня редакции 2024."
+    "На 2-м уровне компетентность в Обмане и Ловкости рук. «Мастер на все руки» даёт +1 к проверкам навыков без владения и не прибавляется к инициативе."
   ]
 }

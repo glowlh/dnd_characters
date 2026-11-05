@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Листы персонажей D&D</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f6f2eb;
+      color: #29231e;
+      font: 1rem/1.5 system-ui, sans-serif;
+    }
+
+    main {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: clamp(2rem, 8vw, 5rem) 1rem;
+    }
+
+    h1, h2 {
+      font-family: Georgia, serif;
+      line-height: 1.2;
+    }
+
+    h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); }
+    h2 { margin: 0; font-size: 1.5rem; }
+    header p { margin: 0.5rem 0 1.5rem; }
+
+    .characters {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .character {
+      padding: 1rem 1.25rem;
+      border: 1px solid #ded4c5;
+      border-radius: 0.5rem;
+      background: #fffdf8;
+    }
+
+    .character-class { margin: 0.25rem 0 0.5rem; color: #656565; }
+
+    a { color: #832e24; text-underline-offset: 0.18em; }
+    a:hover { color: #582017; }
+    a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Листы персонажей D&amp;D</h1>
+      <p>Выберите персонажа, чтобы открыть лист 1-го уровня.</p>
+    </header>
+    <nav aria-label="Листы по персонажам">
+      <ul class="characters" role="list">
+        <li class="character">
+          <h2>Аэльт</h2>
+          <p class="character-class">Волшебник</p>
+          <a href="character-sheets/aelt/index.html" aria-label="Лист 1-го уровня — Аэльт">Лист 1-го уровня</a>
+        </li>
+        <li class="character">
+          <h2>Вега</h2>
+          <p class="character-class">Изобретатель</p>
+          <a href="character-sheets/vega/index.html" aria-label="Лист 1-го уровня — Вега">Лист 1-го уровня</a>
+        </li>
+        <li class="character">
+          <h2>Наэстриель</h2>
+          <p class="character-class">Бард</p>
+          <a href="character-sheets/naestriel/index.html" aria-label="Лист 1-го уровня — Наэстриель">Лист 1-го уровня</a>
+        </li>
+      </ul>
+    </nav>
+  </main>
+</body>
+</html>

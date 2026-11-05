@@ -1,0 +1,4 @@
+interface:
+  display_name: "Листы персонажа D&D из JSON"
+  short_description: "HTML-листы 1-го уровня и дополнение 2-го"
+  default_prompt: "Используй $dnd-character-sheets: создай по приложенному JSON основной HTML-лист 1-го уровня и дополнение для 2-го уровня."

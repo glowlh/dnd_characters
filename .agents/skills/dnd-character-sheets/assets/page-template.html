@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru" data-mode="@@MODE@@">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Лист персонажа D&amp;D</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../sheet-engine.js"></script>
+  <script defer src="../sheet-ui.js"></script>
+</head>
+<body>
+  <main id="sheets" class="sheets" aria-live="polite"></main>
+  <p id="load-error" role="alert" hidden></p>
+  <noscript>Для заполнения листа включите JavaScript, затем откройте печать браузера.</noscript>
+
+  <template id="page-template">
+    <article class="sheet">
+      <div class="masthead"><span>Dungeons &amp; Dragons</span><span>5e{{badge}}</span></div>
+      <header><h1>{{title}}</h1><p>{{subtitle}}</p></header>
+      <div data-slot="abilities" class="score-bar"></div>
+      <div data-slot="columns" class="print-columns"></div>
+      <footer><span>{{label}}</span><span>{{number}} / {{count}}</span></footer>
+    </article>
+  </template>
+  <template id="ability-template">
+    <div><span>{{name}}</span><strong>{{mod}}</strong><small>Значение {{score}}</small></div>
+  </template>
+  <template id="section-template">
+    <section class="panel"><h2>{{title}}</h2><div data-slot="content"></div></section>
+  </template>
+  <template id="table-template"><table class="data-table"><thead></thead><tbody></tbody></table></template>
+
+  <!-- Raw source data, not prefilled page cells. Parsed by sheet-ui.js at runtime. -->
+  <script type="application/json" id="character-json">@@CHARACTER_JSON@@</script>
+  <script type="application/json" id="rules-config">@@RULES_CONFIG@@</script>
+  <script type="application/json" id="spell-catalog">@@SPELL_CATALOG@@</script>
+</body>
+</html>

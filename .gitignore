@@ -1,0 +1,7 @@
+# Temporary working files
+/tmp/
+
+# WebStorm / JetBrains IDE files
+.idea/
+*.iml
+/out/

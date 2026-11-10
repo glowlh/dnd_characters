@@ -1,35 +1,35 @@
-# Листы персонажей D&D
+# D&D Character Sheets
 
-Откройте [`index.html`](index.html) в браузере, чтобы перейти к готовым листам персонажей.
+Open [`index.html`](index.html) in your browser to browse the finished character sheets.
 
-Скилл `dnd-character-sheets` создаёт из JSON-экспорта mycharacterbuilder.com / Long Story Short два HTML-файла для печати на A4. `index.html` — лист 1-го уровня с характеристиками, способностями и заклинаниями. `level-2.html` — дополнение с изменениями на 2-м уровне.
+The `dnd-character-sheets` skill turns a JSON export from mycharacterbuilder.com (Long Story Short) into two HTML files formatted for A4 printing. Each character's `index.html` contains their level 1 stats, abilities, and spells. The `level-2.html` supplement lists what changes at level 2.
 
-## Запуск в Codex
+## Generate Sheets in Codex
 
-Откройте проект в Codex. Скилл находится в [`.agents/skills/dnd-character-sheets/`](.agents/skills/dnd-character-sheets/SKILL.md) и подключается автоматически.
+Open the project in Codex. Codex automatically discovers the skill in [`.agents/skills/dnd-character-sheets/`](.agents/skills/dnd-character-sheets/SKILL.md).
 
-Укажите в запросе путь к JSON персонажа, например:
+Include the path to the character's JSON file in your prompt. For example:
 
-> Используй $dnd-character-sheets и создай листы для `heroes/Дима - Аэльт.json`.
+> Use $dnd-character-sheets to generate character sheets for `heroes/Дима - Аэльт.json`.
 
-## Пересборка из терминала
+## Rebuild Sheets from the Terminal
 
-Если для персонажа уже есть `rules.json`, запустите из корня проекта команду ниже. Для неё нужен Node.js.
+If the character already has a `rules.json` file, run the following command from the project root. It requires Node.js.
 
 ```powershell
 node .agents/skills/dnd-character-sheets/scripts/render-sheets.cjs --input 'heroes/Дима - Аэльт.json' --config character-sheets/aelt/rules.json --output character-sheets/aelt
 ```
 
-Откройте HTML-файлы из папки `character-sheets/aelt/` в браузере. Для печати выберите `Ctrl+P`, формат A4, книжную ориентацию и масштаб 100%, затем отключите колонтитулы.
+Open the HTML files in `character-sheets/aelt/` in your browser. To print, press `Ctrl+P`, select A4 paper and portrait orientation, set the scale to 100%, and turn off headers and footers.
 
-## PWA на GitHub Pages
+## PWA on GitHub Pages
 
-Откройте опубликованный сайт по HTTPS и установите его через меню браузера. При первом посещении с интернетом приложение сохраняет главную, сводку и листы персонажей для офлайна. Для локальной проверки используйте HTTP-сервер на localhost.
+Open the published site over HTTPS and install it from your browser's menu. On your first online visit, the app caches the home page, party overview, and character sheets for offline use. To test locally, serve the project over HTTP on `localhost`.
 
-После изменений листов или сводки пересоберите их как обычно, затем обновите список файлов и версию офлайн-кэша:
+After editing the sheets or party overview, rebuild them as usual. Then run this command to refresh the list of cached files and update the cache version.
 
 ```powershell
 node build-pwa.cjs
 ```
 
-Опубликуйте обновлённый `sw.js` вместе с остальными файлами. Если новая версия загрузилась при открытом приложении, появится кнопка «Обновить». Нажатие переключает версию и перезагружает страницу. При следующем запуске уже готовая версия также может примениться автоматически.
+Publish the updated `sw.js` with the rest of the files. If a new version downloads while the app is open, an update button labeled **Обновить** appears. Click it to activate the new version and reload the page. If the update is already ready, it may also apply automatically the next time you open the app.

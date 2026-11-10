@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Листы персонажей D&D",
-  "short_name": "Листы D&D",
+  "name": "DnD Chars",
+  "short_name": "DnD Chars",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",

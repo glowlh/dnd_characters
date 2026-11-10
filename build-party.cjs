@@ -61,7 +61,6 @@ function renderParty(projectDir) {
     <article class="sheet party-sheet">
       <div class="masthead"><span>Dungeons &amp; Dragons</span><span>5e</span></div>
       <header>
-        <a href="index.html">Все листы персонажей</a>
         <h1>Сводка группы</h1>
         <p>Первый уровень</p>
       </header>

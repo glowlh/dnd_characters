@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Какой класс D&amp;D тебе подойдёт?</title>
+  <link rel="icon" href="assets/favicon.ico">
+  <script src="character-sheets/theme.js"></script>
+  <link rel="stylesheet" href="character-sheets/styles.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f6f2eb;
+      --card: #fffdf8;
+      --ink: #29231e;
+      --muted: #675b51;
+      --line: #d9ccbd;
+      --accent: #4d4a44;
+      --selected: #efede8;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #211c19;
+      --card: #292825;
+      --ink: #f2e9de;
+      --muted: #c7b8a9;
+      --line: #66615a;
+      --accent: #ddd8ce;
+      --selected: #393733;
+    }
+    body { margin: 0; background: var(--page); color: var(--ink); font: 1rem/1.5 system-ui, sans-serif; }
+    main { max-width: 42rem; margin: auto; padding: 0.5rem 1rem clamp(1.5rem, 6vw, 4rem); }
+    a { color: var(--accent); }
+    .eyebrow { margin-bottom: 0.75rem; color: var(--accent); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    h1, h2 { margin: 0; line-height: 1.15; }
+    h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.2; }
+    header p, #step { color: var(--muted); }
+    header p { font-size: 1.125rem; line-height: 1.5; }
+    .quiz-card { background: var(--card); border: 1px solid var(--line); border-radius: 0.9rem; padding: clamp(1rem, 5vw, 2rem); }
+    #step { display: block; font-size: 0.875rem; font-weight: 650; }
+    progress { display: block; width: 100%; height: 0.55rem; margin: 0.5rem 0 1.5rem; accent-color: var(--accent); }
+    #options { display: grid; gap: 0.65rem; margin-top: 1.25rem; }
+    .option { display: flex; gap: 0.75rem; align-items: baseline; padding: 0.75rem; border: 1px solid var(--line); border-radius: 0.55rem; cursor: pointer; }
+    .option:hover, .option:has(:checked) { border-color: var(--accent); background: var(--selected); }
+    .option input { flex: none; margin: 0; accent-color: var(--accent); }
+    .actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; margin-top: 1.4rem; }
+    .actions button { min-height: 44px; padding: 0.5rem 0.9rem; border: 1px solid var(--line); border-radius: 0.5rem; background: transparent; color: var(--ink); font: inherit; font-weight: 650; }
+    .actions button:enabled { cursor: pointer; }
+    .actions button:disabled { opacity: 0.5; }
+    .actions .primary { margin-inline-start: auto; border-color: var(--accent); background: var(--accent); color: var(--page); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .matches { padding: 0; list-style: none; }
+    .matches li { border-top: 1px solid var(--line); padding: 1rem 0; }
+    .matches h3 { margin: 0; }
+    .matches p { margin: 0.35rem 0 0.55rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">D&amp;D 5e · Книга игрока 2014</div>
+      <h1>Какой класс тебе подойдёт?</h1>
+      <p>Выбирай, как тебе хочется действовать в игре. Один ответ на каждый из десяти вопросов.</p>
+    </header>
+    <noscript><p>Чтобы пройти опрос, включи JavaScript в браузере.</p></noscript>
+    <form id="quiz" class="quiz-card" hidden>
+      <label id="step" for="progress"></label>
+      <progress id="progress"></progress>
+      <h2 id="question" tabindex="-1"></h2>
+      <div id="options" role="group" aria-labelledby="question"></div>
+      <div class="actions">
+        <button id="back" type="button">Назад</button>
+        <button id="next" class="primary" type="submit">Далее</button>
+      </div>
+    </form>
+    <section id="result" class="quiz-card" aria-labelledby="result-title" hidden>
+      <h2 id="result-title" tabindex="-1"></h2>
+      <p id="result-intro"></p>
+      <ul id="matches" class="matches"></ul>
+      <div class="actions">
+        <button id="review" type="button">Изменить ответы</button>
+        <button id="restart" type="button">Пройти заново</button>
+      </div>
+    </section>
+  </main>
+  <script>
+    'use strict';
+
+    const classes = {
+      barbarian: ['Варвар', '87-barbarian', 'Брать на себя риск, идти в ближний бой и выдерживать удары благодаря ярости.'],
+      bard: ['Бард', '88-bard', 'Импровизировать, договариваться и помогать другим игрокам с помощью вдохновения и магии.'],
+      cleric: ['Жрец', '89-cleric', 'Следить за командой и выбирать, когда лечить, защищать, усиливать союзников или переходить в наступление.'],
+      druid: ['Друид', '90-druid', 'Использовать природную магию и звериные облики, чтобы исследовать мир и менять условия схватки.'],
+      fighter: ['Воин', '91-fighter', 'Оттачивать стиль владения оружием, занимать выгодную позицию и решать, когда воспользоваться Всплеском действий.'],
+      monk: ['Монах', '93-monk', 'Быстро менять позицию, добираться до важных целей и мешать им действовать.'],
+      paladin: ['Паладин', '94-paladin', 'Защищать союзников на передовой, усиливать удары магией и принимать решения, связанные с клятвой.'],
+      ranger: ['Следопыт', '97-ranger', 'Читать местность, выслеживать цель и сочетать владение оружием с природной магией.'],
+      rogue: ['Плут', '99-rogue', 'Находить лазейки, полагаться на любимые навыки и выбирать момент для точного удара.'],
+      sorcerer: ['Чародей', '101-sorcerer', 'Осваивать любимые заклинания и менять их свойства на ходу с помощью метамагии.'],
+      warlock: ['Колдун', '104-warlock', 'Подбирать сочетание магических даров и находить новые применения любимым приёмам.'],
+      wizard: ['Волшебник', '105-wizard', 'Пополнять книгу заклинаний, готовить инструменты под задачу и доставать неожиданные решения.']
+    };
+
+    const questions = [
+      ['Где тебе комфортнее находиться в бою?', [
+        ['Вблизи, там, где решается, кто кого продавит.', 'barbarian fighter paladin'],
+        ['На краю схватки, откуда можно быстро войти, сделать своё дело и сменить позицию.', 'monk rogue druid'],
+        ['На расстоянии, чтобы самому выбирать цель и момент для атаки.', 'ranger sorcerer warlock'],
+        ['Там, откуда видно, что происходит со всей командой и где я сейчас нужнее всего.', 'bard cleric wizard']
+      ]],
+      ['Как тебе нравится думать над сложной задачей?', [
+        ['Собрать факты, увидеть закономерность и составить план.', 'fighter ranger wizard'],
+        ['Переосмыслить задачу и найти обход, которого никто не заметил.', 'bard druid rogue'],
+        ['Проверить первую удачную догадку и разобраться по ходу.', 'barbarian monk sorcerer'],
+        ['Сначала понять, что для меня важнее всего и на какой риск я готов пойти.', 'cleric paladin warlock']
+      ]],
+      ['Какую роль ты сам обычно берёшь в командной игре?', [
+        ['Иду первым и беру на себя самый трудный участок.', 'barbarian fighter monk'],
+        ['Замечаю, кому нужна помощь, и подстраиваюсь под действия других.', 'bard cleric paladin'],
+        ['Ищу маршрут, слабое место или удобный момент для всей команды.', 'druid ranger rogue'],
+        ['Ищу ход, после которого команда сможет сыграть совсем иначе.', 'sorcerer warlock wizard']
+      ]],
+      ['План сорвался. Что тебе хочется сделать в первые секунды?', [
+        ['Перехватить инициативу, пока ситуацию ещё можно развернуть.', 'barbarian paladin sorcerer'],
+        ['Сменить позицию и воспользоваться тем, что открылось прямо сейчас.', 'monk ranger rogue'],
+        ['Подхватить тех, у кого всё пошло наперекосяк, и помочь команде собраться.', 'bard cleric druid'],
+        ['Оценить, что у нас ещё в запасе, и решить, на какой ход это стоит потратить.', 'fighter warlock wizard']
+      ]],
+      ['Какое развитие персонажа тебе интереснее?', [
+        ['Начать с простого приёма и постепенно научиться выполнять его всё точнее.', 'fighter monk rogue'],
+        ['Выбрать одну сильную сторону и научиться выдавать максимум в решающий момент.', 'barbarian paladin sorcerer'],
+        ['Расширять набор возможностей, чтобы в каждой новой сцене было что попробовать.', 'bard druid wizard'],
+        ['Собрать несколько способностей, которые хорошо работают вместе и на которые можно положиться.', 'cleric ranger warlock']
+      ]],
+      ['Команда пришла в незнакомый город за сведениями. Чем тебе было бы интересно заняться?', [
+        ['Поговорить с разными людьми и понять, кому и зачем стоит нам помочь.', 'bard cleric warlock'],
+        ['Пройтись по городу и заметить, кто за кем следит, куда ведут следы и где есть обходы.', 'druid ranger rogue'],
+        ['Добраться до человека, который принимает решения, и прямо изложить, чего мы хотим.', 'barbarian fighter paladin'],
+        ['Разобраться, кто за всем этим стоит, и проверить версии, которые кажутся маловероятными.', 'monk sorcerer wizard']
+      ]],
+      ['Что даёт тебе больше всего удовольствия от удачного хода?', [
+        ['Я выдержал давление, и благодаря этому у команды осталось время.', 'barbarian fighter paladin'],
+        ['Я помог другому игроку сделать то, что у него почти сорвалось.', 'bard cleric ranger'],
+        ['Я поймал короткий момент и сделал ровно то, что было нужно.', 'monk rogue warlock'],
+        ['Я придумал решение, которое изменило условия для всех.', 'druid sorcerer wizard']
+      ]],
+      ['Какой выбор тебе интереснее всего делать прямо во время игры?', [
+        ['Рискнуть сейчас или приберечь свой самый сильный ход.', 'barbarian paladin warlock'],
+        ['Продолжать делать своё дело или переключиться на помощь союзнику.', 'bard cleric fighter'],
+        ['Пойти очевидным путём или использовать деталь, которую другие пропустили.', 'monk ranger rogue'],
+        ['Повторить проверенный приём или изменить его под новые условия.', 'druid sorcerer wizard']
+      ]],
+      ['Как ты предпочитаешь готовиться к трудному испытанию?', [
+        ['Выяснить, что нас ждёт, и подобрать подходящие средства заранее.', 'druid ranger wizard'],
+        ['Наметить пару вариантов и оставить себе пространство для импровизации.', 'bard rogue sorcerer'],
+        ['Определить, что или кого нужно защитить, и договориться, кто за что отвечает.', 'cleric fighter paladin'],
+        ['Решить, на что я точно могу положиться, даже если всё пойдёт не по плану.', 'barbarian monk warlock']
+      ]],
+      ['Какую историю про своего героя тебе было бы интереснее увидеть за несколько игр?', [
+        ['Он нашёл людей или дело, ради которых готов брать на себя ответственность.', 'cleric paladin barbarian'],
+        ['Он шаг за шагом стал мастером того, что когда-то давалось ему с трудом.', 'fighter monk wizard'],
+        ['Он обнаружил в себе или вокруг себя нечто странное и решает, как этим распорядиться.', 'druid sorcerer warlock'],
+        ['Он научился выживать, договариваться и находить путь в местах, где у него поначалу ничего не получалось.', 'bard ranger rogue']
+      ]]
+    ];
+
+    const quiz = document.getElementById('quiz');
+    const step = document.getElementById('step');
+    const progress = document.getElementById('progress');
+    const question = document.getElementById('question');
+    const options = document.getElementById('options');
+    const back = document.getElementById('back');
+    const next = document.getElementById('next');
+    const result = document.getElementById('result');
+    const resultTitle = document.getElementById('result-title');
+    const resultIntro = document.getElementById('result-intro');
+    const matches = document.getElementById('matches');
+    const answers = Array(questions.length).fill(null);
+    const lastStep = questions.length - 1;
+    let current = 0;
+
+    function showQuestion(moveFocus = true) {
+      const [prompt, choices] = questions[current];
+      result.hidden = true;
+      quiz.hidden = false;
+      step.textContent = 'Вопрос ' + (current + 1) + ' из ' + questions.length;
+      progress.max = questions.length;
+      progress.value = current + 1;
+      question.textContent = prompt;
+      options.replaceChildren();
+
+      choices.forEach(([caption], index) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'choice';
+        input.value = index;
+        input.checked = answers[current] === index;
+        label.append(input, caption);
+        options.append(label);
+      });
+
+      back.hidden = current === 0;
+      next.disabled = answers[current] === null;
+      next.textContent = current === lastStep ? 'Показать результат' : 'Далее';
+      if (moveFocus) question.focus();
+    }
+
+    function showResult() {
+      const scores = Object.fromEntries(Object.keys(classes).map(id => [id, 0]));
+      answers.forEach((choice, index) => {
+        for (const id of questions[index][1][choice][1].split(' ')) scores[id]++;
+      });
+      const highest = Math.max(...Object.values(scores));
+      const winners = Object.keys(scores).filter(id => scores[id] === highest);
+      resultTitle.textContent = winners.length === 1 ? 'Твой результат' : 'Несколько классов подходят одинаково';
+      resultIntro.textContent = winners.length === 1
+        ? 'По твоим ответам этот класс подходит лучше всего.'
+        : 'Эти классы набрали одинаковый балл. Посмотри, какой стиль игры тебе ближе.';
+      matches.replaceChildren();
+
+      for (const id of winners) {
+        const [name, slug, description] = classes[id];
+        const item = document.createElement('li');
+        const heading = document.createElement('h3');
+        heading.textContent = name;
+        const summary = document.createElement('p');
+        summary.textContent = description;
+        const link = document.createElement('a');
+        link.href = 'https://dnd.su/class/' + slug + '/';
+        link.textContent = name + ' на D&D.SU';
+        item.append(heading, summary, link);
+        matches.append(item);
+      }
+
+      quiz.hidden = true;
+      result.hidden = false;
+      resultTitle.focus();
+    }
+
+    options.addEventListener('change', event => {
+      answers[current] = Number(event.target.value);
+      next.disabled = false;
+    });
+    quiz.addEventListener('submit', event => {
+      event.preventDefault();
+      if (answers[current] === null) return;
+      if (current === lastStep) {
+        showResult();
+        return;
+      }
+      current++;
+      showQuestion();
+    });
+    back.addEventListener('click', () => {
+      current--;
+      showQuestion();
+    });
+    document.getElementById('review').addEventListener('click', () => showQuestion());
+    document.getElementById('restart').addEventListener('click', () => {
+      answers.fill(null);
+      current = 0;
+      showQuestion();
+    });
+
+    showQuestion(false);
+  </script>
+</body>
+</html>

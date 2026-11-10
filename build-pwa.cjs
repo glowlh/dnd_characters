@@ -4,7 +4,7 @@ const {createHash} = require('node:crypto');
 
 const root = __dirname;
 const files = [
-  'index.html', 'party.html', 'character-generator.html', 'manifest.webmanifest', 'pwa.js',
+  'index.html', 'party.html', 'character-generator.html', 'class-quiz.html', 'manifest.webmanifest', 'pwa.js',
   'assets/favicon.ico', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/D12.svg',
   'assets/fonts/CormorantSC-SemiBold.ttf',
   'assets/aelt-profile.png', 'assets/naestriel-profile.png', 'assets/vega-profile.png',

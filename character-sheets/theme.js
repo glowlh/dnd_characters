@@ -6,6 +6,7 @@
   const labels = {system: 'системная', light: 'светлая', dark: 'тёмная'};
   const icons = {system: '◐', light: '☀', dark: '☾'};
   const preference = matchMedia('(prefers-color-scheme: dark)');
+  const homeUrl = new URL('../index.html', document.currentScript.src);
   let mode = 'system';
   let button;
 
@@ -60,9 +61,24 @@
       }
       applyTheme();
     });
-    const sheetTools = document.querySelector('.sheet-tools');
-    if (sheetTools) sheetTools.append(button);
-    else document.body.prepend(button);
+    if (document.body.classList.contains('site-home')) {
+      document.body.prepend(button);
+    } else {
+      const toolbar = document.querySelector('.sheet-tools') || document.createElement('nav');
+      toolbar.className = 'sheet-tools';
+      toolbar.setAttribute('aria-label', 'Навигация');
+
+      const home = document.createElement('a');
+      home.className = 'sheet-home';
+      home.href = homeUrl.href;
+      const arrow = document.createElement('span');
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '←';
+      home.append(arrow, 'На главную');
+
+      toolbar.replaceChildren(home, button);
+      document.body.prepend(toolbar);
+    }
     applyTheme();
   });
 })();

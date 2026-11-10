@@ -10,6 +10,10 @@ body {
     font: 13px/1.4 Georgia, "Times New Roman", serif
 }
 
+a {
+    text-decoration: none;
+}
+
 .sheets {
     max-width: 1060px;
     margin: 24px auto
@@ -554,15 +558,23 @@ footer {
     }
 
     .sheet-tools {
+        position: sticky;
+        top: 0;
+        z-index: 1;
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        gap: .25rem;
-        margin: 8px 12px 0;
+        gap: 6px;
+        padding: .75rem;
+        background-color: inherit;
     }
 
     .sheet-tools .theme-toggle {
         margin: 0;
+    }
+
+    .sheet-tools .theme-toggle:hover {
+        background: transparent;
     }
 
     .sheet-home {
@@ -570,15 +582,10 @@ footer {
         align-items: center;
         gap: .4rem;
         min-height: 44px;
-        padding: 0 .65rem;
         border-radius: .5rem;
         color: inherit;
         font: .875rem system-ui, sans-serif;
         text-decoration: none;
-    }
-
-    .sheet-home:hover {
-        background: #8882;
     }
 
     .sheet-home:focus-visible {

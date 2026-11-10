@@ -6,9 +6,38 @@
 
   const workerUrl = new URL('sw.js', document.currentScript.src);
   const workers = navigator.serviceWorker;
+  const cacheControls = document.getElementById('cache-controls');
   let registration;
   let button;
   let applying = false;
+
+  if (cacheControls) {
+    const resetButton = cacheControls.querySelector('button');
+    const status = cacheControls.querySelector('[role="status"]');
+    const showReset = () => { cacheControls.hidden = !workers.controller; };
+    showReset();
+    workers.addEventListener('controllerchange', showReset);
+    resetButton.addEventListener('click', () => {
+      const controller = workers.controller;
+      if (!controller) return;
+
+      resetButton.disabled = true;
+      status.textContent = 'Загружаем файлы заново…';
+      const channel = new MessageChannel();
+      const finish = ok => {
+        clearTimeout(timeout);
+        channel.port1.close();
+        if (ok) location.reload();
+        else {
+          status.textContent = 'Не удалось обновить кэш. Проверьте подключение и попробуйте ещё раз.';
+          resetButton.disabled = false;
+        }
+      };
+      const timeout = setTimeout(() => finish(false), 20000);
+      channel.port1.onmessage = event => finish(event.data?.ok);
+      controller.postMessage({type: 'REFRESH_CACHE'}, [channel.port2]);
+    });
+  }
 
   function showUpdate() {
     if (!workers.controller || !registration.waiting || button) return;

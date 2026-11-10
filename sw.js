@@ -1,18 +1,20 @@
 'use strict';
 
 // This line is maintained by node build-pwa.cjs.
-const RELEASE = {"version":"7a392b5e4d080162","files":["assets/D12.svg","assets/favicon.ico","assets/fonts/CormorantSC-SemiBold.ttf","assets/icon-192.png","assets/icon-512.png","character-generator.html","character-sheets/aelt/index.html","character-sheets/aelt/level-2.html","character-sheets/naestriel/index.html","character-sheets/naestriel/level-2.html","character-sheets/sheet-engine.js","character-sheets/sheet-ui.js","character-sheets/styles.css","character-sheets/theme.js","character-sheets/vega/index.html","character-sheets/vega/level-2.html","index.html","manifest.webmanifest","party.html","pwa.js"]};
+const RELEASE = {"version":"26756181751fa853","files":["assets/D12.svg","assets/aelt-profile.png","assets/favicon.ico","assets/fonts/CormorantSC-SemiBold.ttf","assets/icon-192.png","assets/icon-512.png","assets/naestriel-profile.png","assets/vega-profile.png","character-generator.html","character-sheets/aelt/index.html","character-sheets/aelt/level-2.html","character-sheets/naestriel/index.html","character-sheets/naestriel/level-2.html","character-sheets/sheet-engine.js","character-sheets/sheet-ui.js","character-sheets/styles.css","character-sheets/theme.js","character-sheets/vega/index.html","character-sheets/vega/level-2.html","index.html","manifest.webmanifest","party.html","pwa.js"]};
 const scope = self.registration.scope;
 const cachePrefix = 'dnd-character-sheets:' + scope + ':';
 const cacheName = cachePrefix + RELEASE.version;
 const files = new Set(RELEASE.files.map(file => new URL(file, scope).href));
 
 self.addEventListener('install', event => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(cacheName);
-    await cache.addAll([...files].map(url => new Request(url, {cache: 'reload'})));
-  })());
+  event.waitUntil(refreshCache());
 });
+
+async function refreshCache() {
+  const cache = await caches.open(cacheName);
+  await cache.addAll([...files].map(url => new Request(url, {cache: 'reload'})));
+}
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
@@ -26,6 +28,13 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
   if (event.data?.type === 'APPLY_UPDATE') event.waitUntil(self.skipWaiting());
+  if (event.data?.type === 'REFRESH_CACHE' && event.ports[0]) {
+    const port = event.ports[0];
+    event.waitUntil(refreshCache().then(
+      () => port.postMessage({ok: true}),
+      () => port.postMessage({ok: false})
+    ));
+  }
 });
 
 self.addEventListener('fetch', event => {
@@ -37,7 +46,13 @@ self.addEventListener('fetch', event => {
   if (!files.has(url.href)) return;
 
   event.respondWith((async () => {
-    const cache = await caches.open(cacheName);
-    return (await cache.match(url.href)) || fetch(event.request);
+    let response;
+    try {
+      response = await fetch(event.request, {cache: 'no-cache'});
+      if (response.status < 500) return response;
+    } catch {
+      // The release cache remains available without a connection.
+    }
+    return (await caches.match(url.href, {cacheName})) || response || Response.error();
   })());
 });

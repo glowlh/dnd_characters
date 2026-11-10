@@ -57,6 +57,20 @@
     .quick-links a:hover { background: #8882; }
     .quick-links :is(svg, img) { flex: none; width: 1.2rem; height: 1.2rem; }
     [data-theme="dark"] .quick-links img { filter: grayscale(1) invert(1) brightness(1.35); }
+    .cache-controls { margin-top: 1.5rem; font-size: 0.875rem; }
+    .cache-controls button {
+      min-height: 44px;
+      padding: 0 0.75rem;
+      border: 0;
+      border-radius: 0.5rem;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
+    .cache-controls button:enabled { cursor: pointer; }
+    .cache-controls button:enabled:hover { background: #8882; }
+    .cache-controls button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    .cache-controls button:disabled { opacity: 0.55; }
 
     .characters {
       display: grid;
@@ -66,14 +80,30 @@
       list-style: none;
     }
 
-    .character {
-      padding: 1rem 1.25rem;
+    .site-home a.character {
+      display: grid;
+      position: relative;
+      overflow: hidden;
       border: 1px solid #ded4c5;
       border-radius: 0.5rem;
       background: #fffdf8;
+      color: inherit;
+      text-decoration: none;
     }
 
+    .character-details { padding: 1rem calc(7rem - 21px) 1rem 1.25rem; }
     .character-class { margin: 0.25rem 0 0.5rem; color: #656565; }
+    .character-portrait {
+      display: block;
+      position: absolute;
+      right: -21px;
+      top: -8px;
+      width: 7rem;
+      height: auto;
+    }
+    [data-theme="dark"] .character-portrait { filter: url(#portrait-light-ink); }
+
+    .site-home a.character:hover { border-color: currentColor; }
 
     a { color: #832e24; text-underline-offset: 0.18em; }
     a:hover { color: #582017; }
@@ -81,6 +111,21 @@
   </style>
 </head>
 <body class="site-home">
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <filter id="portrait-light-ink" color-interpolation-filters="sRGB">
+      <!-- The mask is opaque only where all three color channels are zero. -->
+      <feColorMatrix in="SourceGraphic" type="matrix"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -255 -255 -255 0 1" result="black"/>
+      <feFlood flood-color="rgb(188, 195, 183)"/>
+      <feComposite in2="black" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="lightInk"/>
+      <feComposite in="SourceGraphic" in2="black" operator="out" result="otherColors"/>
+      <feMerge>
+        <feMergeNode in="otherColors"/>
+        <feMergeNode in="lightInk"/>
+      </feMerge>
+    </filter>
+  </svg>
   <main>
     <header>
       <h1>Листы персонажей D&amp;D</h1>
@@ -101,23 +146,39 @@
     </header>
     <nav aria-label="Листы по персонажам">
       <ul class="characters" role="list">
-        <li class="character">
-          <h2>Аэльт</h2>
-          <p class="character-class">Волшебник</p>
-          <a href="character-sheets/aelt/index.html" aria-label="Лист 1-го уровня — Аэльт">Лист 1-го уровня</a>
+        <li>
+          <a class="character" href="character-sheets/aelt/index.html" aria-label="Аэльт, Волшебник, лист 1-го уровня">
+            <div class="character-details">
+              <h2>Аэльт</h2>
+              <p class="character-class">Волшебник</p>
+            </div>
+            <img class="character-portrait" src="assets/aelt-profile.png" alt="" width="384" height="384">
+          </a>
         </li>
-        <li class="character">
-          <h2>Вега</h2>
-          <p class="character-class">Изобретатель</p>
-          <a href="character-sheets/vega/index.html" aria-label="Лист 1-го уровня — Вега">Лист 1-го уровня</a>
+        <li>
+          <a class="character" href="character-sheets/vega/index.html" aria-label="Вега, Изобретатель, лист 1-го уровня">
+            <div class="character-details">
+              <h2>Вега</h2>
+              <p class="character-class">Изобретатель</p>
+            </div>
+            <img class="character-portrait" src="assets/vega-profile.png" alt="" width="384" height="384">
+          </a>
         </li>
-        <li class="character">
-          <h2>Наэстриель</h2>
-          <p class="character-class">Бард</p>
-          <a href="character-sheets/naestriel/index.html" aria-label="Лист 1-го уровня — Наэстриель">Лист 1-го уровня</a>
+        <li>
+          <a class="character" href="character-sheets/naestriel/index.html" aria-label="Наэстриель, Бард, лист 1-го уровня">
+            <div class="character-details">
+              <h2>Наэстриель</h2>
+              <p class="character-class">Бард</p>
+            </div>
+            <img class="character-portrait" src="assets/naestriel-profile.png" alt="" width="384" height="384">
+          </a>
         </li>
       </ul>
     </nav>
+    <div class="cache-controls" id="cache-controls" hidden>
+      <button type="button">Сбросить офлайн-кэш</button>
+      <span role="status"></span>
+    </div>
   </main>
 </body>
 </html>

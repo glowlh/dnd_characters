@@ -26,13 +26,13 @@ function packageSheets(input,configFile,output){
   if([input,configFile].filter(Boolean).some(file=>path.resolve(file)===sharedStyles))throw Error('Shared stylesheet would overwrite an input');
   // Character folders hold only the two HTML pages; engine, UI and styles are shared one level up.
   for(const file of ['index.html','level-2.html'])if(path.resolve(input)===path.join(out,file)||configFile&&path.resolve(configFile)===path.join(out,file))throw Error('Output would overwrite an input');
-  for(const file of ['styles.css','sheet-engine.js','sheet-ui.js',path.basename(out)+'.review.json'])if(path.resolve(input)===path.join(sharedDirectory,file)||configFile&&path.resolve(configFile)===path.join(sharedDirectory,file))throw Error('Shared file would overwrite an input');
+  for(const file of ['styles.css','sheet-engine.js','sheet-ui.js','theme.js',path.basename(out)+'.review.json'])if(path.resolve(input)===path.join(sharedDirectory,file)||configFile&&path.resolve(configFile)===path.join(sharedDirectory,file))throw Error('Shared file would overwrite an input');
   fs.mkdirSync(out,{recursive:true});
   fs.writeFileSync(path.join(out,'index.html'),render('base'));
   fs.writeFileSync(path.join(out,'level-2.html'),render('advancement'));
   // Seed once: rebuilding a character must preserve edits to the shared stylesheet.
   if(!fs.existsSync(sharedStyles))fs.copyFileSync(path.join(assetDir,'styles.css'),sharedStyles);
-  for(const file of ['sheet-engine.js','sheet-ui.js'])fs.copyFileSync(path.join(assetDir,file),path.join(sharedDirectory,file));
+  for(const file of ['sheet-engine.js','sheet-ui.js','theme.js'])fs.copyFileSync(path.join(assetDir,file),path.join(sharedDirectory,file));
   fs.writeFileSync(path.join(sharedDirectory,path.basename(out)+'.review.json'),JSON.stringify({sourceSha256:source.sha256,characterName:source.name,rulesEdition:source.root.edition||config.rulesEdition||'2024',sources:config.sources||[],notes:config.notes||[],pipeline:'JSON.parse -> calculated view contexts -> HTML templates in browser'},null,2));
   return {main:path.join(out,'index.html'),appendix:path.join(out,'level-2.html'),styles:sharedStyles,review:path.join(sharedDirectory,path.basename(out)+'.review.json'),pages:{main:views.main.length,appendix:views.appendix.length},views};
 }

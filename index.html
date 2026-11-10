@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Листы персонажей D&D</title>
+  <script src="character-sheets/theme.js"></script>
+  <link rel="stylesheet" href="character-sheets/styles.css">
   <style>
     body {
       margin: 0;
@@ -13,6 +15,7 @@
     }
 
     main {
+      box-sizing: content-box;
       max-width: 42rem;
       margin: 0 auto;
       padding: clamp(2rem, 8vw, 5rem) 1rem;
@@ -25,6 +28,7 @@
 
     h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); }
     h2 { margin: 0; font-size: 1.5rem; }
+    header { margin: 0; }
     header p { margin: 0.5rem 0 1.5rem; }
 
     .characters {
@@ -49,11 +53,12 @@
     a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
   </style>
 </head>
-<body>
+<body class="site-home">
   <main>
     <header>
       <h1>Листы персонажей D&amp;D</h1>
       <p>Выберите персонажа, чтобы открыть лист 1-го уровня.</p>
+      <p><a href="party.html">Сводка группы для мастера</a></p>
     </header>
     <nav aria-label="Листы по персонажам">
       <ul class="characters" role="list">

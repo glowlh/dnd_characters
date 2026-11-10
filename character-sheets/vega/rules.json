@@ -5,7 +5,7 @@
   "weaknessEffect": "При их виде Вега получает состояние «Испуганный». Пока источник страха находится в пределах прямой видимости, проверки характеристик и броски атаки совершаются с помехой. Нельзя добровольно приближаться к источнику страха. Состояние само по себе не уменьшает Ловкость, КД, скорость или числовые бонусы.",
   "equipmentProfiles": [],
   "sources": [
-    "SecretsOfSokolKeep/heroes/Антон - Вега.json",
+    "heroes/Антон - Вега.json",
     "tmp/Конструктор персонажа D&D 5.5e – v6.2.html (SPELL_DETAILS_SRD и текст способностей)",
     "https://www.dndbeyond.com/posts/2106-whats-new-with-the-artificer-in-eberron-forge-of",
     "https://www.dndbeyond.com/sources/dnd/br-2024/character-origins",
@@ -14,13 +14,16 @@
     "https://www.dndbeyond.com/sources/dnd/br-2024/magic-items-a-z#BagofHolding",
     "https://media.wizards.com/2015/downloads/dnd/PrincesApocalypse_AdvSupplementv1.0_PrinterFriendly.pdf",
     "https://media.dndbeyond.com/compendium-images/ua/eberron-updates/Lhg25Ggx5iY3rETH/UA2025-CartographerArtificer.pdf",
-    "https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary#FrightenedCondition"
+    "https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary#FrightenedCondition",
+    "Tasha’s Cauldron of Everything (2020), с. 10, Artificer → Starting Equipment",
+    "https://www.dndbeyond.com/sources/dnd/br-2024/equipment",
+    "https://www.dndbeyond.com/sources/dnd/basic-rules-2014/equipment#EquipmentPacks"
   ],
   "notes": [
     "Убежище — выбор второго уровня.",
     "Инструменты алхимика сохранены с разрешения ведущего.",
     "Описание части реплик сверено с предварительным UA2025.",
-    "Снаряжение и 16 зм исправлены по прямому указанию пользователя; в текущем оружии только кинжал. Повторный выстрел остаётся известной схемой без привязки к отсутствующему карабину.",
+    "Классовый стартовый набор взят из «Котла Таши»: проклёпанный доспех, два кинжала, лёгкий арбалет с 20 болтами, воровские инструменты и набор исследователя подземелий. 16 зм из прежнего классового набора сняты. Инструменты ремонтника и жемчужина сохранены отдельно. Повторный выстрел остаётся известной неактивной схемой.",
     "При виде пауков применяется Испуганный вместо штрафа Ловкости −5: помеха на проверки и атаки при прямой видимости источника; нельзя добровольно приближаться. Срабатывание и длительность — особенность по решению ведущего; базовые характеристики не снижены."
   ],
   "itemRules": {

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Генератор характера · D&amp;D</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/favicon.ico">
+  <script defer src="pwa.js"></script>
+  <script src="character-sheets/theme.js"></script>
+  <link rel="stylesheet" href="character-sheets/styles.css">
+  <style>
+    .generator {
+      font: 1rem/1.5 system-ui, sans-serif;
+    }
+
+    .generator h1, .generator h2 {
+      line-height: 1.2;
+    }
+
+    .generator h1 { font-size: clamp(1.9rem, 5vw, 2.65rem); }
+    .generator header p { margin-top: 0.5rem; font-size: 1rem; }
+
+    .generator .roll-button {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 44px;
+      padding: 0.65rem 1.15rem;
+      border: 1px solid transparent;
+      border-radius: 0.45rem;
+      overflow: hidden;
+      background: #832e24;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .generator .roll-button:hover { background: #582017; }
+    .generator .roll-icon {
+      flex: none;
+      width: 1.5rem;
+      height: 1.5rem;
+      filter: grayscale(1) invert(1) brightness(1.35);
+    }
+    .generator :is(a, button, summary):focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 3px;
+    }
+
+    .generator .results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin: 1.25rem 0 2rem;
+    }
+
+    .generator .result-card {
+      margin: 0;
+      padding: 0.85rem 1rem;
+    }
+
+    .generator .result-card h2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin: 0 0 0.3rem;
+      font-size: 1.3rem;
+      text-transform: none;
+      letter-spacing: normal;
+      text-align: left;
+    }
+
+    .generator .roll-number {
+      padding: 0.15em 0.5em;
+      border: 1px solid currentColor;
+      border-radius: 0.35rem;
+      color: #832e24;
+      font: 700 0.85rem/1.4 system-ui, sans-serif;
+      white-space: nowrap;
+    }
+
+    .generator .result-hint { color: #595d52; font-size: 0.85rem; }
+    .generator .tables h2 { margin: 0 0 0.75rem; font-size: 1.4rem; }
+    .generator summary { cursor: pointer; }
+    .generator ol { margin: 0.75rem 0 0; padding-inline-start: 2.15rem; }
+    .generator li { padding: 0.25rem 0.5rem; }
+    .generator li[aria-current="true"] { background: #f1e6da; border-radius: 0.25rem; }
+    .generator li[aria-current="true"]::marker { font-weight: 700; }
+
+    @media screen and (max-width: 620px) {
+      .generator .results { grid-template-columns: 1fr; }
+    }
+
+    @media screen {
+      [data-theme="dark"] .generator .result-hint { color: var(--dark-muted); }
+      [data-theme="dark"] .generator .roll-number { color: var(--dark-link); }
+      [data-theme="dark"] .generator li[aria-current="true"] { background: var(--dark-summary); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sheet-tools" aria-label="Навигация">
+    <a class="sheet-home" href="index.html"><span aria-hidden="true">←</span> На главную</a>
+  </nav>
+  <main class="sheets">
+    <article class="sheet generator">
+      <header>
+        <h1>Генератор характера</h1>
+        <p>Брось четыре d12. Первый кубик определяет фишку, второй — причину, третий — прошлое, четвёртый — слабость.</p>
+      </header>
+      <button class="roll-button" id="roll" type="button">
+        <img class="roll-icon" src="assets/D12.svg" alt="" width="24" height="24">
+        <span class="roll-label">Бросить 4d12</span>
+      </button>
+      <div class="results" aria-live="polite" aria-atomic="true">
+      <section class="panel result-card" data-result="quirk">
+        <h2>Фишка<span class="roll-number" hidden></span></h2>
+        <p class="result-hint">Что сразу заметят</p>
+        <p class="result-text">Результат появится после броска.</p>
+      </section>
+      <section class="panel result-card" data-result="motivation">
+        <h2>Причина<span class="roll-number" hidden></span></h2>
+        <p class="result-hint">Зачем рискует</p>
+        <p class="result-text">Результат появится после броска.</p>
+      </section>
+      <section class="panel result-card" data-result="past">
+        <h2>Прошлое<span class="roll-number" hidden></span></h2>
+        <p class="result-hint">Кем был раньше</p>
+        <p class="result-text">Результат появится после броска.</p>
+      </section>
+      <section class="panel result-card" data-result="flaw">
+        <h2>Слабость<span class="roll-number" hidden></span></h2>
+        <p class="result-hint">Где даёт трещину</p>
+        <p class="result-text">Результат появится после броска.</p>
+        <p class="result-effect" hidden>Эффект: <em></em></p>
+      </section>
+      </div>
+      <section class="tables" aria-labelledby="all-options">
+        <h2 id="all-options">Все варианты</h2>
+      <details class="panel">
+        <summary><strong>Фишка</strong> · что сразу заметят</summary>
+        <ol id="quirk">
+          <li>Даёт прозвища каждому мечу и извиняется перед ним, когда промахивается.</li>
+          <li>На развилке спрашивает совета у ворона. Если ворона нет, высказывает его мнение сам.</li>
+          <li>Представляясь, обязательно называет имя, ремесло и последнее блюдо, которое ел.</li>
+          <li>Перед важным разговором торжественно представляет свой левый сапог как советника. Правый, по его словам, пока на испытательном сроке.</li>
+          <li>Просит Тима́ру о везении, подбрасывая монету. Если выпадает не та сторона, объявляет бросок разминочным.</li>
+          <li>В каждой таверне спрашивает, есть ли местный суп, и оценивает его вслух так, будто судит состязание.</li>
+          <li>Перед сном зарисовывает самое странное из увиденного. Даже драконы у него похожи на кур.</li>
+          <li>Прежде чем сесть, спрашивает у стула, не занят ли он. Если стул скрипит, герой извиняется и ищет другой.</li>
+          <li>Ведёт счёт обещаниям в блокноте. У выполненных рисует крошечные весы.</li>
+          <li>Называет самые дорогие вещи именами тех, кто их подарил: «Передай мне Шандру» вполне может означать плащ.</li>
+          <li>Разговаривает с лошадьми и мулами так уважительно, словно это самые рассудительные члены отряда.</li>
+          <li>Перед рискованным делом репетирует победную речь; после успеха неизменно забывает её целиком.</li>
+        </ol>
+      </details>
+      <details class="panel">
+        <summary><strong>Причина</strong> · зачем рискует</summary>
+        <ol id="motivation">
+          <li>Хочет выкупить семейную лодку, заложенную после неудачного сезона.</li>
+          <li>Хочет отыскать человека, который однажды спас ему жизнь, и наконец поблагодарить его.</li>
+          <li>Собирает деньги, чтобы открыть бесплатную лечебницу в родном квартале.</li>
+          <li>Проиграл гусю семейный герб. Ищет свидетелей, чтобы доказать, что гусь жульничал.</li>
+          <li>Хочет вернуть себе доброе имя после того, как его обвинили в пропаже груза.</li>
+          <li>Хочет накопить на собственную таверну, где путника не выгонят на улицу в бурю.</li>
+          <li>Ищет достаточно необычную историю, чтобы старшая сестра перестала рассказывать за семейным столом только о своих подвигах.</li>
+          <li>Ищет дракона, готового одним выдохом испечь пирог на всю деревню. Тесто уже обещал замесить.</li>
+          <li>Дал слово вернуть украденную семейную реликвию и хочет сдержать его, пока её прежний хозяин ещё жив.</li>
+          <li>Путешествует, чтобы выяснить, чем хочет заниматься сам, после многих лет жизни по чужому расписанию.</li>
+          <li>Копит на покупку земли, чтобы родные больше не зависели от настроения землевладельца.</li>
+          <li>Хочет вернуть долг бывшему сообщнику, который взял на себя вину за их общее преступление.</li>
+        </ol>
+      </details>
+      <details class="panel">
+        <summary><strong>Прошлое</strong> · кем был раньше</summary>
+        <ol id="past">
+          <li>Грузил суда в доках Флана и умеет по звуку отличить пустую бочку от полной.</li>
+          <li>Переписывал описи в храме Огмы и привык уточнять, кто что видел собственными глазами.</li>
+          <li>Готовил еду для каравана на Побережье Мечей. Знает, чем накормить десятерых из припасов на пятерых.</li>
+          <li>Работал герольдом на улиточных скачках. Однажды объявлял финиш три дня подряд.</li>
+          <li>Служил в городской страже, но ушёл после того, как отказался подписать ложный рапорт.</li>
+          <li>Вырос при постоялом дворе у Лунного Моря: подавал еду, стелил постели и слушал дорожные байки.</li>
+          <li>Был учеником картографа в Уотердипе. Хорошо чертит, но впервые составляет карты мест, в которых побывал сам.</li>
+          <li>Подрабатывал привидением в трактире. Уволился, когда настоящее привидение потребовало половину чаевых.</li>
+          <li>Прислуживал в храме Ильматера: носил воду, менял повязки и выслушивал тех, кому больше некому было выговориться.</li>
+          <li>Рос в обеспеченной семье и готовился вести её дела, но почти не бывал за пределами родного города.</li>
+          <li>Помогал на семейной ферме в Долинах: ухаживал за скотом, чинил изгороди и торговался на ярмарках.</li>
+          <li>Был карманником на городских рынках. Теперь знает, куда смотреть, когда кто-то слишком старательно отвлекает толпу.</li>
+        </ol>
+      </details>
+      <details class="panel">
+        <summary><strong>Слабость</strong> · где даёт трещину</summary>
+        <ol id="flaw">
+          <li data-effect="Если герой отказывается от предложенной помощи и берётся за рискованную задачу один, его первая проверка для этой задачи совершается с помехой.">Не умеет просить о помощи и часто говорит «я справлюсь», когда уже пора звать друзей.</li>
+          <li data-effect="Когда двое людей, которым герой доверяет, рассказывают разные версии, он совершает с помехой проверку Проницательности, чтобы понять, кто скрывает правду.">Теряется, когда два человека, которым он доверяет, рассказывают разные версии событий.</li>
+          <li data-effect="При встрече с явно голодным человеком герой отдаёт ему одну порцию из своих припасов, если она есть. Один раз за сцену.">Плохо переносит вид чужого голода: раздаёт свои припасы и потом сам просит добавки.</li>
+          <li data-effect="Помеха на Обман, когда герой пытается выдать себя за знатока при разговоре с настоящим специалистом.">Услышав незнакомое слово, важно кивает и уверяет, что сам когда-то это преподавал.</li>
+          <li data-effect="Когда стражник или другой представитель власти в форме прямо угрожает герою, герой Испуган им до конца разговора, максимум на 1 минуту. Пока герой видит источник страха, у него помеха на проверки характеристик и броски атаки. Он не может добровольно приблизиться к источнику страха.">Ему трудно спокойно разговаривать с человеком в форме, даже если тот готов помочь.</li>
+          <li data-effect="За бесплатный ужин или ночлег герой предлагает хозяину небольшую услугу. Если хозяин соглашается, герой тратит на неё 10 минут.">Не умеет принимать гостеприимство: после бесплатного ужина уверен, что теперь должен хозяину услугу.</li>
+          <li data-effect="Помеха на Обман, когда герой притворяется, что знает, что делать.">Боится показаться неопытным и стесняется задать самый простой вопрос.</li>
+          <li data-effect="Помеха на Скрытность, когда герой пытается бесшумно открыть скрипучую дверь.">Когда дверь скрипит, невольно скрипит ей в ответ. Уверен, что это вежливо.</li>
+          <li data-effect="Если герой берёт обещание обратно, его следующая проверка Убеждения в разговоре с тем, кому он обещал помочь, совершается с помехой.">Соглашается на просьбу раньше, чем успевает понять, по силам ли она ему.</li>
+          <li data-effect="Если незнакомец при первой встрече изображает дружбу, чтобы выведать личное, герой Очарован им до конца разговора, максимум на 1 минуту. Герой не может атаковать очаровавшего или выбирать его целью наносящих урон способностей и магических эффектов. Очаровавший получает преимущество на проверки социального взаимодействия с героем.">Легко принимает вежливость за дружбу и слишком рано делится личным.</li>
+          <li data-effect="Если герой отвлекается на мелкую работу в напряжённой сцене, его следующая проверка Восприятия, чтобы заметить происходящее вокруг, совершается с помехой.">Когда тревожится, уходит с головой в мелкую работу вместо того, чтобы сказать, что его беспокоит.</li>
+          <li data-effect="При прямом подозрении в краже герой совершает с помехой первую проверку Убеждения или Обмана, чтобы отвести подозрение.">Особенно тяжело переносит подозрения в краже: даже невинный вопрос может задеть его за живое.</li>
+        </ol>
+      </details>
+      </section>
+    </article>
+  </main>
+  <script>
+    const cards = document.querySelectorAll('[data-result]');
+    const rollButton = document.getElementById('roll');
+    const rollIcon = rollButton.querySelector('.roll-icon');
+    const rollLabel = rollButton.querySelector('.roll-label');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let rollAnimations = [];
+
+    function animateRoll() {
+      for (const animation of rollAnimations) animation.cancel();
+      if (reducedMotion.matches) return;
+
+      const duration = 600;
+      const inset = 5;
+      const left = inset - rollIcon.offsetLeft;
+      const right = rollButton.clientWidth - rollIcon.offsetWidth - rollIcon.offsetLeft - inset;
+      const top = inset - rollIcon.offsetTop;
+      const bottom = rollButton.clientHeight - rollIcon.offsetHeight - rollIcon.offsetTop - inset;
+      const iconPath = [
+        [0, 0, 0, 0],
+        [0.22, right, top, 100],
+        [0.46, left, bottom, 210],
+        [0.65, right * 0.55, top, 300],
+        [0.82, left * 0.35, bottom * 0.7, 350],
+        [1, 0, 0, 360],
+      ].map(([offset, x, y, angle]) => ({
+        offset, transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,
+      }));
+
+      rollAnimations = [
+        rollButton.animate([
+          { transform: 'translateX(0) rotate(0)' },
+          { transform: 'translateX(-7px) rotate(-4deg)' },
+          { transform: 'translateX(6px) rotate(3deg)' },
+          { transform: 'translateX(-4px) rotate(-2deg)' },
+          { transform: 'translateX(3px) rotate(1deg)' },
+          { transform: 'translateX(0) rotate(0)' },
+        ], { duration, easing: 'ease-in-out' }),
+        rollIcon.animate(iconPath, { duration }),
+        rollLabel.animate([
+          { opacity: 1 },
+          { opacity: 0.25, offset: 0.15 },
+          { opacity: 0.25, offset: 0.75 },
+          { opacity: 1 },
+        ], { duration, easing: 'ease-in-out' }),
+      ];
+    }
+
+    rollButton.addEventListener('click', () => {
+      animateRoll();
+      for (const card of cards) {
+        const table = document.getElementById(card.dataset.result);
+        const options = table.children;
+        const roll = Math.floor(Math.random() * options.length) + 1;
+        const selected = options[roll - 1];
+
+        table.querySelector('[aria-current]')?.removeAttribute('aria-current');
+        selected.setAttribute('aria-current', 'true');
+        const badge = card.querySelector('.roll-number');
+        badge.textContent = 'd12 · ' + roll;
+        badge.hidden = false;
+        card.querySelector('.result-text').textContent = selected.textContent;
+        const effect = card.querySelector('.result-effect');
+        if (effect) {
+          effect.querySelector('em').textContent = selected.dataset.effect;
+          effect.hidden = false;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

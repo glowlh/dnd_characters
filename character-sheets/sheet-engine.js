@@ -8,7 +8,7 @@
   'Изобретатель':{kind:'artificer',die:8,ability:'int',prepared:[2,3],slots:[2,2],cantrips:2},
   'Волшебник':{kind:'wizard',die:6,ability:'int',prepared:[4,5],slots:[2,3],cantrips:3}
  };
- const WEAPONS={dagger:{name:'Кинжал',dice:'1d4',ability:'finesse',proficient:true,range:'20/60 футов',type:'колющий'},musket:{name:'Мушкет',dice:'1d12',ability:'dex',proficient:false,range:'40/120 футов',type:'колющий'},quarterstaff:{name:'Боевой посох',dice:'1d6',ability:'str',proficient:true,range:'—',type:'дробящий'}};
+ const WEAPONS={dagger:{name:'Кинжал',dice:'1d4',ability:'finesse',proficient:true,range:'20/60 футов',type:'колющий'},musket:{name:'Мушкет',dice:'1d12',ability:'dex',proficient:false,range:'40/120 футов',type:'колющий'},lightCrossbow:{name:'Лёгкий арбалет',dice:'1d8',ability:'dex',proficient:true,range:'80/320 футов',type:'колющий'},quarterstaff:{name:'Боевой посох',dice:'1d6',ability:'str',proficient:true,range:'—',type:'дробящий'}};
  const mod=n=>Math.floor((n-10)/2),signed=n=>n>=0?'+'+n:String(n).replace('-','−');
  const value=x=>x?.value??'';
  const unique=a=>[...new Set(a.filter(Boolean))];
@@ -48,11 +48,22 @@
  function attacks(source,stats,pb,config,level,kind){
   const owned=inventory(source).join('\n');
   const rows=[];
-  const bindings=[...(config.equipmentProfiles||[])];
-  if(/кинжал|(?:^|[\s,;])нож(?:$|[\s,;.])/iu.test(owned)||source.sheet.weaponsList?.some(w=>/кинжал|нож/i.test(value(w.name))))bindings.unshift({match:'Кинжал',rule:'dagger'});
-  if(/(?:^|[\s,;])посох/iu.test(owned)||source.sheet.weaponsList?.some(w=>/посох/i.test(value(w.name))))bindings.unshift({match:'Боевой посох',rule:'quarterstaff'});
+  const owns = name => owned.toLowerCase().includes(name.toLowerCase());
+  const bindings = (config.equipmentProfiles || []).filter(binding => owns(binding.match));
+  const defaults = [
+   ['quarterstaff', /(?:^|[\s,;])посох/iu],
+   ['dagger', /кинжал|(?:^|[\s,;])нож(?:$|[\s,;.])/iu],
+   ['lightCrossbow', /л[её]гкий арбалет/iu],
+  ];
+  for (const [rule, pattern] of defaults) {
+   if (!pattern.test(owned)) continue;
+   const match = owned.match(pattern)[0].trim();
+   if (!bindings.some(binding => binding.match.toLowerCase() === match.toLowerCase() ||
+      binding.match.toLowerCase() === WEAPONS[rule].name.toLowerCase())) {
+    bindings.push({match: WEAPONS[rule].name, rule});
+   }
+  }
   for(const binding of bindings){
-   if(binding.match!=='Кинжал'&&binding.match!=='Боевой посох'&&!owned.includes(binding.match))continue;
    const rule=WEAPONS[binding.rule];if(!rule)throw Error('Неизвестный профиль оружия: '+binding.rule);
    const ability=rule.ability==='finesse'?(stats.dex.mod>=stats.str.mod?'dex':'str'):rule.ability;
    const repeating=kind==='artificer'&&level>=2&&jsonField(source.fields.classDecision2,[]).includes('Оружие повторного выстрела')&&jsonField(source.fields.classDecision1,[]).some(x=>x.scheme==='Оружие повторного выстрела'&&x.detail===binding.match);
@@ -62,7 +73,7 @@
    const attackType=rule.range==='—'?'Ближняя':binding.rule==='dagger'?'Ближняя; метание '+normalize(rule.range):'Дальнобойная ('+normalize(rule.range)+')';
    rows.push({name:binding.match,rule:binding.rule,ability,proficient,attack:m+(proficient?pb:0)+magic,attackFormula,damage:rule.dice+(m+magic?signed(m+magic):''),type:rule.type,range:normalize(rule.range),attackType});
   }
-  for(const w of source.sheet.weaponsList||[]){const name=value(w.name);if(rows.some(r=>r.name===name)||/кинжал/i.test(name))continue;
+  for(const w of source.sheet.weaponsList||[]){const name=value(w.name);if(!name||!owns(name)||rows.some(r=>r.name.toLowerCase()===name.toLowerCase())||/кинжал|л[её]гкий арбалет/i.test(name))continue;
    const binding=(config.equipmentProfiles||[]).find(x=>x.match===name);if(binding)continue;
    throw Error('Нужен профиль оружия для '+name+'; кэшированные mod/dmg не используются как расчёт.');
   }

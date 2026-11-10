@@ -27,7 +27,6 @@
     }
 
     h1, h2 {
-      font-family: Georgia, serif;
       line-height: 1.2;
     }
 
@@ -35,6 +34,29 @@
     h2 { margin: 0; font-size: 1.5rem; }
     header { margin: 0; }
     header p { margin: 0.5rem 0 1.5rem; }
+
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quick-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-height: 44px;
+      padding: 0 0.65rem;
+      border: 1px solid currentColor;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      text-decoration: none;
+    }
+
+    .quick-links a:hover { background: #8882; }
+    .quick-links :is(svg, img) { flex: none; width: 1.2rem; height: 1.2rem; }
+    [data-theme="dark"] .quick-links img { filter: grayscale(1) invert(1) brightness(1.35); }
 
     .characters {
       display: grid;
@@ -63,7 +85,19 @@
     <header>
       <h1>Листы персонажей D&amp;D</h1>
       <p>Выберите персонажа, чтобы открыть лист 1-го уровня.</p>
-      <p><a href="party.html">Сводка группы для мастера</a></p>
+      <nav class="quick-links" aria-label="Инструменты">
+        <a href="party.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
+            <circle cx="8.5" cy="7.5" r="3"/>
+            <path d="M2.5 19v-1a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1M16 5a3 3 0 0 1 0 6m.5 3a4 4 0 0 1 4 4v1"/>
+          </svg>
+          Сводка группы
+        </a>
+        <a href="character-generator.html">
+          <img src="assets/D12.svg" alt="" width="20" height="20">
+          Генератор
+        </a>
+      </nav>
     </header>
     <nav aria-label="Листы по персонажам">
       <ul class="characters" role="list">

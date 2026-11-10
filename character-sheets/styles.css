@@ -115,7 +115,28 @@
   }
   .theme-toggle:hover { background: #8882; }
   .theme-toggle:focus-visible { outline: 2px solid currentColor; }
-  .theme-toggle + .sheets { margin-top: 4px; }
+  .sheet-tools {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: .25rem;
+    margin: 8px 12px 0;
+  }
+  .sheet-tools .theme-toggle { margin: 0; }
+  .sheet-home {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    min-height: 44px;
+    padding: 0 .65rem;
+    border-radius: .5rem;
+    color: inherit;
+    font: .875rem system-ui, sans-serif;
+    text-decoration: none;
+  }
+  .sheet-home:hover { background: #8882; }
+  .sheet-home:focus-visible { outline: 2px solid currentColor; }
+  .theme-toggle + .sheets, .sheet-tools + .sheets { margin-top: 4px; }
 
   [data-theme="dark"] :is(body, .site-home) {
     background: var(--dark-page);
@@ -145,5 +166,30 @@
 @media print {
   :root { color-scheme: light; }
   .site-home { background: white; color: black; }
-  .theme-toggle { display: none; }
+  .theme-toggle, .sheet-tools { display: none; }
+}
+
+/* The update control is available only on screen. */
+.pwa-update { display: none; }
+@media screen {
+  .pwa-update {
+    display: block;
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    z-index: 10;
+    padding: .65rem 1rem;
+    border: 1px solid #656b5d;
+    border-radius: .5rem;
+    background: #fffdf8;
+    color: #29231e;
+    font: 600 .875rem system-ui, sans-serif;
+    cursor: pointer;
+  }
+  [data-theme="dark"] .pwa-update {
+    background: var(--dark-sheet);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+  }
+  .pwa-update:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 }

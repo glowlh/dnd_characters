@@ -60,7 +60,9 @@
       }
       applyTheme();
     });
-    document.body.prepend(button);
+    const sheetTools = document.querySelector('.sheet-tools');
+    if (sheetTools) sheetTools.append(button);
+    else document.body.prepend(button);
     applyTheme();
   });
 })();

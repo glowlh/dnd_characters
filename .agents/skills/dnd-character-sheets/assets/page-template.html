@@ -2,6 +2,10 @@
 <html lang="ru" data-mode="@@MODE@@">
 <head>
   <meta charset="utf-8">
+  <link rel="manifest" href="../../manifest.webmanifest">
+  <link rel="icon" href="../../assets/favicon.ico">
+  <link rel="apple-touch-icon" href="../../assets/icon-192.png">
+  <script defer src="../../pwa.js"></script>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Лист персонажа D&amp;D</title>
   <script src="../theme.js"></script>
@@ -10,6 +14,9 @@
   <script defer src="../sheet-ui.js"></script>
 </head>
 <body>
+  <nav class="sheet-tools" aria-label="Навигация по листам">
+    <a class="sheet-home" href="../../index.html"><span aria-hidden="true">←</span> На главную</a>
+  </nav>
   <main id="sheets" class="sheets" aria-live="polite"></main>
   <p id="load-error" role="alert" hidden></p>
   <noscript>Для заполнения листа включите JavaScript, затем откройте печать браузера.</noscript>

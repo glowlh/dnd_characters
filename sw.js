@@ -1,7 +1,7 @@
 'use strict';
 
 // This line is maintained by node build-pwa.cjs.
-const RELEASE = {"version":"26756181751fa853","files":["assets/D12.svg","assets/aelt-profile.png","assets/favicon.ico","assets/fonts/CormorantSC-SemiBold.ttf","assets/icon-192.png","assets/icon-512.png","assets/naestriel-profile.png","assets/vega-profile.png","character-generator.html","character-sheets/aelt/index.html","character-sheets/aelt/level-2.html","character-sheets/naestriel/index.html","character-sheets/naestriel/level-2.html","character-sheets/sheet-engine.js","character-sheets/sheet-ui.js","character-sheets/styles.css","character-sheets/theme.js","character-sheets/vega/index.html","character-sheets/vega/level-2.html","index.html","manifest.webmanifest","party.html","pwa.js"]};
+const RELEASE = {"version":"91b45aa11972bd72","files":["assets/D12.svg","assets/aelt-profile.png","assets/favicon.ico","assets/fonts/CormorantSC-SemiBold.ttf","assets/icon-192.png","assets/icon-512.png","assets/naestriel-profile.png","assets/vega-profile.png","character-generator.html","character-sheets/aelt/index.html","character-sheets/aelt/level-2.html","character-sheets/naestriel/index.html","character-sheets/naestriel/level-2.html","character-sheets/sheet-engine.js","character-sheets/sheet-ui.js","character-sheets/styles.css","character-sheets/theme.js","character-sheets/vega/index.html","character-sheets/vega/level-2.html","index.html","manifest.webmanifest","party.html","pwa.js"]};
 const scope = self.registration.scope;
 const cachePrefix = 'dnd-character-sheets:' + scope + ':';
 const cacheName = cachePrefix + RELEASE.version;

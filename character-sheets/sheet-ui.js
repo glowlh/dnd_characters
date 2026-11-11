@@ -25,13 +25,13 @@
   }
   return fragment;
  }
- function blockView(block,ctx){
+ function blockView(block){
   const fragment=instantiate('section-template',{title:block.title}),view=fragment.querySelector('.panel'),body=fragment.querySelector('[data-slot="content"]');
   if(block.cost){const mark=document.createElement('span');mark.className='cost-mark';mark.textContent=engine.normalize(block.cost);view.append(mark);}
   if(block.summary)view.classList.add('summary');
   if(block.rows?.length)view.classList.add('with-table');
   for(const text of block.text||[])if(text)body.append(textParagraph(text));
-  for(const template of block.paragraphs||[]){const p=document.createElement('p');p.innerHTML=safeRich(engine.normalize(format(template,ctx,escape)));body.append(p);}
+  for(const paragraph of block.paragraphs||[]){const p=document.createElement('p');p.innerHTML=safeRich(engine.normalize(paragraph));body.append(p);}
   if(block.rows?.length)body.append(tableView(block));
   return fragment;
  }
@@ -43,23 +43,22 @@
   if(wideBlocks.length){
    columns.classList.add('has-wide-blocks');
    const wide=document.createElement('div');wide.className='wide-blocks';
-   for(const block of wideBlocks)wide.append(blockView(block,page.ctx));
+   for(const block of wideBlocks)wide.append(blockView(block));
    columns.append(wide);
   }
-  page.columns.forEach((blocks,i)=>{const column=document.createElement('div');column.className='sheet-column column-'+i;for(const block of blocks)if(block.span!==2)column.append(blockView(block,page.ctx));columns.append(column);});
+  page.columns.forEach((blocks,i)=>{const column=document.createElement('div');column.className='sheet-column column-'+i;for(const block of blocks)if(block.span!==2)column.append(blockView(block));columns.append(column);});
   return fragment;
  }
- function read(id){return JSON.parse(document.getElementById(id).textContent);}
+ async function readCharacter(){
+  if(location.protocol==='file:')return JSON.parse(document.getElementById('character-json').textContent);
+  const response=await fetch('character.json',{cache:'no-store'});
+  if(!response.ok)throw Error('Данные персонажа недоступны.');
+  return response.json();
+ }
  async function start(){
-  let raw=read('character-json');
-  // Same files work offline. Under HTTP, prefer the editable JSON next to the page when present;
-  // otherwise the embedded snapshot from the last packaging is the source of truth.
-  if(location.protocol==='http:'||location.protocol==='https:'){
-   try{const response=await fetch('character.json',{cache:'no-store'});if(response.ok)raw=await response.json();}catch{/* fall back to the embedded snapshot */}
-  }
-  const views=engine.build(raw,read('rules-config'),read('spell-catalog'));
+  const views=await readCharacter();
   const mode=document.documentElement.dataset.mode,pages=mode==='advancement'?views.appendix:views.main;
-  document.title=views.base.identity.name+' · '+(mode==='advancement'?'2-й':'1-й')+' уровень';
+  document.title=views.main[0].title+' · '+(mode==='advancement'?'2-й':'1-й')+' уровень';
   const target=document.getElementById('sheets');target.replaceChildren(...pages.map((page,i)=>pageView(page,i,pages.length)));
   document.documentElement.dataset.ready='true';
   globalThis.dndSheet={views,render:()=>target.replaceChildren(...pages.map((page,i)=>pageView(page,i,pages.length)))};

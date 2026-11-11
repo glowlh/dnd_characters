@@ -21,5 +21,5 @@
     "Воровской жаргон — редкий язык, сохранён по явному выбору игрока.",
     "На 2-м уровне компетентность в Обмане и Ловкости рук. «Мастер на все руки» даёт +1 к проверкам навыков без владения и не прибавляется к инициативе."
   ],
-  "pipeline": "JSON.parse -> calculated view contexts -> HTML templates in browser"
+  "pipeline": "source JSON -> calculated character.json -> HTML templates in browser"
 }

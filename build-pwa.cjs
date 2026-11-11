@@ -14,7 +14,7 @@ const files = [
 
 for (const folder of fs.readdirSync(path.join(root, 'character-sheets'), {withFileTypes: true})) {
   if (!folder.isDirectory()) continue;
-  for (const name of ['index.html', 'level-2.html']) {
+  for (const name of ['index.html', 'level-2.html', 'character.json']) {
     const file = 'character-sheets/' + folder.name + '/' + name;
     if (fs.existsSync(path.join(root, file))) files.push(file);
   }
@@ -30,7 +30,7 @@ hash.update(worker.replace(releaseLine, 'const RELEASE = null;').replace(/\r\n/g
 for (const file of files.sort()) {
   hash.update(file + '\0');
   const bytes = fs.readFileSync(path.join(root, file));
-  hash.update(/\.(?:html|css|js|webmanifest)$/.test(file)
+  hash.update(/\.(?:html|css|js|json|webmanifest)$/.test(file)
     ? bytes.toString('utf8').replace(/\r\n/g, '\n')
     : bytes);
   hash.update('\0');

@@ -150,8 +150,15 @@ assert(html.includes('<h1>{{title}}</h1>'));assert(html.includes('id="character-
 assert(!html.includes('<td>'));assert(!html.includes('<script>bad()</script>'));
 assert(html.includes('../sheet-engine.js'));assert(html.includes('../sheet-ui.js'));
 assert(html.includes('href="../styles.css"'));
-// Character folder holds only the two HTML pages; scripts and styles are shared one level up.
-for(const file of ['styles.css','sheet-engine.js','sheet-ui.js','character.json','review.json'])assert(!fs.existsSync(path.join(out,file)),file+' must not be in the character folder');
+for(const file of ['styles.css','sheet-engine.js','sheet-ui.js','review.json'])assert(!fs.existsSync(path.join(out,file)),file+' must not be in the character folder');
+const character=JSON.parse(fs.readFileSync(path.join(out,'character.json'),'utf8'));
+assert.equal(character.main[0].title,s2.name.value);
+assert.equal(character.main.length,second.main.length);
+assert.equal(character.appendix.length,second.appendix.length);
+for(const page of [...character.main,...character.appendix]){
+ assert(!Object.hasOwn(page,'ctx'));
+ for(const block of page.columns.flat())for(const paragraph of block.paragraphs||[])assert(!paragraph.includes('{{'));
+}
 const sharedStyles=path.join(dir,'character-sheets','styles.css');
 assert(fs.existsSync(sharedStyles));
 for(const file of ['sheet-engine.js','sheet-ui.js','first.review.json'])assert(fs.existsSync(path.join(dir,'character-sheets',file)),file+' must be shared');
@@ -159,7 +166,7 @@ fs.appendFileSync(sharedStyles,'\n/* retained shared edit */');
 packageSheets(input,cfg,path.join(dir,'character-sheets','second'));
 assert(fs.readFileSync(sharedStyles,'utf8').includes('retained shared edit'));
 assert(!fs.existsSync(path.join(dir,'character-sheets','second','styles.css')));
-assert.deepEqual(JSON.parse(html.match(/id="character-json">(.*?)<\/script>/s)[1]),changed);
+assert.deepEqual(JSON.parse(html.match(/id="character-json">(.*?)<\/script>/s)[1]),character);
 assert.throws(()=>packageSheets(input,path.join(dir,'old-model.json'),out));
 assert.equal(E.normalize('40/120 футов; к6'),'8/24 клет.; d6');
 assert.equal(E.components('В, С, М (жемчужина стоимостью 100 зм)'), 'Вербальный, Соматический, Материальный (жемчужина стоимостью 100 зм)');
@@ -189,7 +196,7 @@ if(process.env.DND_TEST_NODE_MODULES){
   assert(dom.window.document.querySelectorAll('.panel.with-table').length>=1);
   assert(dom.window.document.querySelectorAll('.cost-mark').length>=3);
   assert(!dom.window.document.querySelector('#sheets').textContent.includes('JSON'));
-  assert.equal(dom.window.dndSheet.views.base.coins.find(x=>x[0]==='зм')[1],91);
+  assert(dom.window.dndSheet.views.main.flatMap(page=>page.columns.flat()).some(block=>block.rows?.some(row=>Array.isArray(row)&&row[0]==='зм'&&Number(row[1])===91)));
   dom.window.close();console.log('PASS: actual template/DOM fill, safe text insertion and all data mutation checks.');
  }
  checkDom().catch(e=>{console.error(e);process.exitCode=1;});

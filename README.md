@@ -2,7 +2,7 @@
 
 Open [`index.html`](index.html) in your browser to browse the finished character sheets.
 
-The `dnd-character-sheets` skill turns a JSON export from mycharacterbuilder.com (Long Story Short) into two HTML files formatted for A4 printing. Each character's `index.html` contains their level 1 stats, abilities, and spells. The `level-2.html` supplement lists what changes at level 2.
+The `dnd-character-sheets` skill turns a JSON export from mycharacterbuilder.com (Long Story Short) into a ready-to-use `character.json` and two HTML files formatted for A4 printing. Both pages read the same JSON over HTTP(S). The `main` section holds the level 1 sheet, and `appendix` holds the level 2 supplement. Opening an HTML file directly uses the snapshot embedded when it was generated.
 
 ## Generate Sheets in Codex
 
@@ -26,7 +26,7 @@ Open the HTML files in `character-sheets/aelt/` in your browser. To print, press
 
 Open the published site over HTTPS and install it from your browser's menu. On your first online visit, the app caches the home page, party overview, and character sheets for offline use. To test locally, serve the project over HTTP on `localhost`.
 
-After editing the sheets or party overview, rebuild them as usual. Then run this command to refresh the list of cached files and update the cache version.
+After editing a finished `character.json` or the party overview, run this command to update the offline cache version. Rebuilding a character from the original export regenerates its JSON and both HTML snapshots.
 
 ```powershell
 node build-pwa.cjs

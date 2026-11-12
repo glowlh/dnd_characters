@@ -20,6 +20,31 @@ for (const folder of fs.readdirSync(path.join(root, 'character-sheets'), {withFi
   }
 }
 
+// Keep the party data available when party.html is opened directly or offline.
+const party = files.filter(file => file.startsWith('character-sheets/') && file.endsWith('/character.json')).map(file => {
+  const {main} = JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
+  const blocks = main.flatMap(page => page.columns.flat());
+  const combat = new Map(blocks.find(block => block.title === 'Боевые показатели').rows);
+  const magic = blocks.find(block => block.title === 'Использование заклинаний');
+  return {
+    name: main[0].title,
+    href: file.replace(/character\.json$/, 'index.html'),
+    abilities: main[0].scores,
+    perception: Number(combat.get('Пассивное Восприятие')),
+    hp: Number(combat.get('Максимум хитов')),
+    armorClass: Number(combat.get('Класс доспеха')),
+    spellDc: Number(magic?.paragraphs[0].match(/Сл (\d+)/)?.[1]) || null,
+  };
+});
+const partyPath = path.join(root, 'party.html');
+const partyHtml = fs.readFileSync(partyPath, 'utf8');
+const partyData = /(<script type="application\/json" id="party-data">)[\s\S]*?(<\/script>)/;
+if (!partyData.test(partyHtml)) throw new Error('Не найден блок party-data в party.html.');
+const updatedParty = partyHtml.replace(partyData, (_, start, end) =>
+  start + '\n' + JSON.stringify(party, null, 2).replace(/</g, '\\u003c') + '\n  ' + end
+);
+if (partyHtml !== updatedParty) fs.writeFileSync(partyPath, updatedParty);
+
 const workerPath = path.join(root, 'sw.js');
 const worker = fs.readFileSync(workerPath, 'utf8');
 const releaseLine = /^const RELEASE = .*;$/m;

@@ -29,7 +29,11 @@ function packageSheets(input,configFile,output){
  const data={main:preparePages(views.main),appendix:preparePages(views.appendix)};
  const template=fs.readFileSync(path.join(assetDir,'page-template.html'),'utf8');
  const snapshot=inline(data);
- const render=mode=>template.replaceAll('@@MODE@@',()=>mode).replaceAll('@@CHARACTER_JSON@@',()=>snapshot);
+ const render=mode=>template.replaceAll('@@MODE@@',()=>mode)
+  .replace('@@LEVEL_LINK@@',mode==='base'
+   ?'  <a class="sheet-level-link" href="level-2.html">2-й уровень</a>'
+   :'  <a class="sheet-level-link" href="index.html">1-й уровень</a>')
+  .replaceAll('@@CHARACTER_JSON@@',()=>snapshot);
  const out=path.resolve(output);
   const sharedDirectory=path.dirname(out),sharedStyles=path.join(sharedDirectory,'styles.css');
   if(path.basename(sharedDirectory)!=='character-sheets')throw Error('Output must be character-sheets/<character-folder>; shared scripts and styles live in character-sheets/.');

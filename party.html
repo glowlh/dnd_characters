@@ -25,14 +25,233 @@
           <thead>
             <tr><th scope="col">Персонаж</th><th scope="col">Сила</th><th scope="col">Ловкость</th><th scope="col">Телосложение</th><th scope="col">Интеллект</th><th scope="col">Мудрость</th><th scope="col">Харизма</th><th scope="col">Пассивное Восприятие</th><th scope="col">Макс. хитов</th><th scope="col">КД</th><th scope="col">Сл заклинаний</th><th scope="col">Конц.</th></tr>
           </thead>
-          <tbody>
-          <tr><th scope="row"><a href="character-sheets/aelt/index.html">Аэльт</a></th><td>9 (−1)</td><td>14 (+2)</td><td>13 (+1)</td><td>17 (+3)</td><td>12 (+1)</td><td>10 (+0)</td><td>13</td><td>7</td><td>12</td><td>13</td><td>+1</td></tr>
-          <tr><th scope="row"><a href="character-sheets/vega/index.html">Вега</a></th><td>8 (−1)</td><td>16 (+3)</td><td>13 (+1)</td><td>16 (+3)</td><td>12 (+1)</td><td>10 (+0)</td><td>11</td><td>9</td><td>15</td><td>13</td><td>+1</td></tr>
-          <tr><th scope="row"><a href="character-sheets/naestriel/index.html">Наэстриель</a></th><td>8 (−1)</td><td>15 (+2)</td><td>15 (+2)</td><td>10 (+0)</td><td>12 (+1)</td><td>15 (+2)</td><td>13</td><td>10</td><td>13</td><td>12</td><td>+2</td></tr>
-          </tbody>
+          <tbody id="party-rows"></tbody>
         </table>
       </div>
+      <section class="party-summary" aria-labelledby="party-strength">
+        <h2 id="party-strength">Сила группы</h2>
+        <p><strong id="party-rating" class="party-rating" hidden></strong></p>
+        <p id="party-budget"></p>
+        <p><strong>Профиль группы.</strong> <span id="party-profile"></span></p>
+      </section>
     </article>
   </main>
+  <script type="application/json" id="party-data">
+[
+  {
+    "name": "Аэльт",
+    "href": "character-sheets/aelt/index.html",
+    "abilities": [
+      {
+        "name": "Сила",
+        "score": 9,
+        "mod": "−1"
+      },
+      {
+        "name": "Ловкость",
+        "score": 14,
+        "mod": "+2"
+      },
+      {
+        "name": "Телосложение",
+        "score": 13,
+        "mod": "+1"
+      },
+      {
+        "name": "Интеллект",
+        "score": 17,
+        "mod": "+3"
+      },
+      {
+        "name": "Мудрость",
+        "score": 12,
+        "mod": "+1"
+      },
+      {
+        "name": "Харизма",
+        "score": 10,
+        "mod": "+0"
+      }
+    ],
+    "perception": 13,
+    "hp": 7,
+    "armorClass": 12,
+    "spellDc": 13
+  },
+  {
+    "name": "Наэстриель",
+    "href": "character-sheets/naestriel/index.html",
+    "abilities": [
+      {
+        "name": "Сила",
+        "score": 8,
+        "mod": "−1"
+      },
+      {
+        "name": "Ловкость",
+        "score": 15,
+        "mod": "+2"
+      },
+      {
+        "name": "Телосложение",
+        "score": 15,
+        "mod": "+2"
+      },
+      {
+        "name": "Интеллект",
+        "score": 10,
+        "mod": "+0"
+      },
+      {
+        "name": "Мудрость",
+        "score": 12,
+        "mod": "+1"
+      },
+      {
+        "name": "Харизма",
+        "score": 15,
+        "mod": "+2"
+      }
+    ],
+    "perception": 13,
+    "hp": 10,
+    "armorClass": 13,
+    "spellDc": 12
+  },
+  {
+    "name": "Неттлин",
+    "href": "character-sheets/nettlin/index.html",
+    "abilities": [
+      {
+        "name": "Сила",
+        "score": 8,
+        "mod": "−1"
+      },
+      {
+        "name": "Ловкость",
+        "score": 13,
+        "mod": "+1"
+      },
+      {
+        "name": "Телосложение",
+        "score": 14,
+        "mod": "+2"
+      },
+      {
+        "name": "Интеллект",
+        "score": 14,
+        "mod": "+2"
+      },
+      {
+        "name": "Мудрость",
+        "score": 15,
+        "mod": "+2"
+      },
+      {
+        "name": "Харизма",
+        "score": 11,
+        "mod": "+0"
+      }
+    ],
+    "perception": 14,
+    "hp": 10,
+    "armorClass": 12,
+    "spellDc": 12
+  },
+  {
+    "name": "Вега",
+    "href": "character-sheets/vega/index.html",
+    "abilities": [
+      {
+        "name": "Сила",
+        "score": 8,
+        "mod": "−1"
+      },
+      {
+        "name": "Ловкость",
+        "score": 16,
+        "mod": "+3"
+      },
+      {
+        "name": "Телосложение",
+        "score": 13,
+        "mod": "+1"
+      },
+      {
+        "name": "Интеллект",
+        "score": 16,
+        "mod": "+3"
+      },
+      {
+        "name": "Мудрость",
+        "score": 12,
+        "mod": "+1"
+      },
+      {
+        "name": "Харизма",
+        "score": 10,
+        "mod": "+0"
+      }
+    ],
+    "perception": 11,
+    "hp": 9,
+    "armorClass": 15,
+    "spellDc": 13
+  }
+]
+  </script>
+  <script>
+    const party = JSON.parse(document.getElementById('party-data').textContent);
+    const rows = document.getElementById('party-rows');
+
+    for (const character of party) {
+      const row = rows.insertRow();
+      const heading = document.createElement('th');
+      heading.scope = 'row';
+      const link = document.createElement('a');
+      link.href = character.href;
+      link.textContent = character.name;
+      heading.append(link);
+      row.append(heading);
+
+      const scores = character.abilities.map(ability => `${ability.score} (${ability.mod})`);
+      const values = [...scores, character.perception, character.hp, character.armorClass,
+        character.spellDc ?? '—', character.abilities[2].mod];
+      for (const value of values) row.insertCell().textContent = value;
+    }
+
+    if (party.length) {
+      // D&D 2024 encounter XP budget for one level 1 character.
+      const [low, moderate, high] = [50, 75, 100].map(xp => xp * party.length);
+      document.getElementById('party-budget').textContent =
+        `Бюджет противников по D&D 2024 — ${low} XP для низкой сложности, ${moderate} XP для средней и ${high} XP для высокой.`;
+
+      const sum = select => party.reduce((total, character) => total + select(character), 0);
+      // Compare effective HP against a +4 attack with four level 1 characters at 9 HP and AC 13.
+      const hitChance = armorClass => Math.max(0.05, Math.min(0.95, (25 - armorClass) / 20));
+      const referenceHp = 4 * 9 / hitChance(13);
+      const relativeHp = sum(character => character.hp / hitChance(character.armorClass)) / referenceHp;
+      const rating = document.getElementById('party-rating');
+      const strength = relativeHp < 0.8 ? 'weak' : relativeHp > 1.2 ? 'strong' : 'medium';
+      rating.dataset.strength = strength;
+      rating.textContent = {weak: 'Слабая группа', medium: 'Средняя группа', strong: 'Сильная группа'}[strength];
+      rating.hidden = false;
+
+      const abilityTotals = party[0].abilities.map(({name}, index) =>
+        ({name, total: sum(character => character.abilities[index].score)}));
+      const extremes = find => {
+        const total = find(...abilityTotals.map(ability => ability.total));
+        return abilityTotals.filter(ability => ability.total === total).map(ability => `«${ability.name}»`).join(', ');
+      };
+      const format = new Intl.NumberFormat('ru', {maximumFractionDigits: 1});
+      const averageArmor = format.format(sum(character => character.armorClass) / party.length);
+      const bestPerception = Math.max(...party.map(character => character.perception));
+      document.getElementById('party-profile').textContent =
+        `Наибольшие средние значения — ${extremes(Math.max)}, наименьшие — ${extremes(Math.min)}. ` +
+        `Запас группы — ${sum(character => character.hp)} хитов, средний КД — ${averageArmor}, максимальное пассивное Восприятие — ${bestPerception}.`;
+    } else {
+      document.getElementById('party-budget').textContent = 'В группе пока нет персонажей.';
+    }
+  </script>
 </body>
 </html>

@@ -160,6 +160,22 @@
   .theme-toggle, .sheet-tools { display: none; }
 }
 
+.sheet-level-link { display: none; }
+@media screen {
+  .sheet-level-link {
+    display: table;
+    margin: 0.75rem auto 1.5rem;
+    color: inherit;
+    font-size: 0.75rem;
+    opacity: 0.65;
+    text-decoration: none;
+  }
+  .sheet-level-link:is(:hover, :focus-visible) {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
 /* The update control is available only on screen. */
 .pwa-update { display: none; }
 @media screen {

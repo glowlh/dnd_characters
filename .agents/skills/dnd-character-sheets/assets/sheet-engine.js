@@ -6,9 +6,10 @@
  const CLASSES={
   'Бард':{kind:'bard',die:8,ability:'cha',prepared:[4,5],slots:[2,3],cantrips:2},
   'Изобретатель':{kind:'artificer',die:8,ability:'int',prepared:[2,3],slots:[2,2],cantrips:2},
-  'Волшебник':{kind:'wizard',die:6,ability:'int',prepared:[4,5],slots:[2,3],cantrips:3}
+  'Волшебник':{kind:'wizard',die:6,ability:'int',prepared:[4,5],slots:[2,3],cantrips:3},
+  'Друид':{kind:'druid',die:8,ability:'wis',prepared:[4,5],slots:[2,3],cantrips:2}
  };
- const WEAPONS={dagger:{name:'Кинжал',dice:'1d4',ability:'finesse',proficient:true,range:'20/60 футов',type:'колющий'},musket:{name:'Мушкет',dice:'1d12',ability:'dex',proficient:false,range:'40/120 футов',type:'колющий'},lightCrossbow:{name:'Лёгкий арбалет',dice:'1d8',ability:'dex',proficient:true,range:'80/320 футов',type:'колющий'},quarterstaff:{name:'Боевой посох',dice:'1d6',ability:'str',proficient:true,range:'—',type:'дробящий'}};
+ const WEAPONS={dagger:{name:'Кинжал',hands:'одноручное',inventoryName:/кинжал(?:а|ы|ов)?|нож(?:а|и|ей)?/iu,dice:'1d4',ability:'finesse',proficient:true,range:'20/60 футов',type:'колющий'},musket:{name:'Мушкет',hands:'двуручное',dice:'1d12',ability:'dex',proficient:false,range:'40/120 футов',type:'колющий'},lightCrossbow:{name:'Лёгкий арбалет',hands:'двуручное',inventoryName:/л[её]гкий арбалет/iu,dice:'1d8',ability:'dex',proficient:true,range:'80/320 футов',type:'колющий'},quarterstaff:{name:'Боевой посох',hands:'универсальное, в одной или двух руках',inventoryName:/(?:боевой )?посох/iu,dice:'1d6',ability:'str',proficient:true,range:'—',type:'дробящий'},sickle:{name:'Серп',hands:'одноручное',dice:'1d4',ability:'str',proficient:true,range:'—',type:'рубящий'}};
  const mod=n=>Math.floor((n-10)/2),signed=n=>n>=0?'+'+n:String(n).replace('-','−');
  const value=x=>x?.value??'';
  const unique=a=>[...new Set(a.filter(Boolean))];
@@ -51,6 +52,7 @@
   const owns = name => owned.toLowerCase().includes(name.toLowerCase());
   const bindings = (config.equipmentProfiles || []).filter(binding => owns(binding.match));
   const defaults = [
+   ['sickle', /(?:^|[\s,;])серп(?=$|[\s,;.])/iu],
    ['quarterstaff', /(?:^|[\s,;])посох/iu],
    ['dagger', /кинжал|(?:^|[\s,;])нож(?:$|[\s,;.])/iu],
    ['lightCrossbow', /л[её]гкий арбалет/iu],
@@ -93,11 +95,17 @@
   const alert=(species==='Человек'&&f.humanOriginFeat==='Бдительный')||/^Бдительный\s*:/im.test(featText);
   const expertise=unique([...selectedFields(f,'expertise'),...Object.entries(s.skills||{}).filter(([,x])=>x.isProf===2).map(([key])=>SKILLS[key]?.[0])]);
   const scholar=profile.kind==='wizard'?(config.wizardScholar||null):null;
+  const druid=profile.kind==='druid';
+  const magician=druid&&f.classDecision0==='Ведун';
+  const natureBonus=magician?Math.max(1,stats.wis.mod):0;
+  const originMagic=druid?state.originMagic?.background:null;
+  const originCantrips=unique((originMagic?.cantrips||[]).map(key=>config.cantripReplacements?.[key]??key));
   const skills=Object.fromEntries(Object.entries(SKILLS).map(([key,[name,defaultAbility]])=>{
    const skill=s.skills?.[key]||{},ability=skill.baseStat||defaultAbility;
    const prof=!!skill.isProf,expert=profile.kind==='bard'?level>=2&&expertise.includes(name):profile.kind==='wizard'?level>=2&&name===scholar:skill.isProf===2;
    const bonus=prof?(expert?pb*2:pb):profile.kind==='bard'&&level>=2?Math.floor(pb/2):0;
-   return [key,{key,name,ability,proficient:prof,expert,total:stats[ability].mod+bonus,signed:signed(stats[ability].mod+bonus)}];
+   const total=stats[ability].mod+bonus+(['arcana','nature'].includes(key)?natureBonus:0);
+   return [key,{key,name,ability,proficient:prof,expert,total,signed:signed(total)}];
   }));
   if(profile.kind==='wizard'&&level>=2&&(!scholar||!Object.values(skills).find(x=>x.name===scholar)?.proficient))throw Error('Для 2-го уровня волшебника задайте wizardScholar — навык экспертизы «Учёного» из числа освоенных.');
   if(profile.kind==='bard'&&level>=2&&expertise.length!==2)throw Error('Для 2-го уровня барда выберите два навыка компетентности в JSON или настройках.');
@@ -115,7 +123,8 @@
   const prepared=level===1?currentPrepared.filter(k=>k!==extra):unique([...currentPrepared,...(extra?[extra]:[])]);
   if(prepared.length!==profile.prepared[level-1])throw Error('Число подготовленных заклинаний не соответствует уровню '+level+'; проверьте выборы.');
   const spellbook=profile.kind==='wizard'?unique(spellState?.spellbook??(source.root.spells?.book||[]).map(id=>keyForId(id)??id)):[];
-  for(const key of [...cantrips,...prepared,...spellbook])if(!spells[key])throw Error('Нет полного описания '+key+' в справочнике.');
+  for(const key of [...cantrips,...prepared,...spellbook,...originCantrips,...(originMagic?.spell?[originMagic.spell]:[]),...(druid?['speak-with-animals']:[])])if(!spells[key])throw Error('Нет полного описания '+key+' в справочнике.');
+  if(druid&&cantrips.length!==profile.cantrips+Number(magician))throw Error('Проверьте число заговоров друида и выбранный первобытный орден.');
   const spellmod=stats[profile.ability].mod;
   const speed=Number(value(s.vitality?.speed)||30),equipment=inventory(source);
   const vitality={hpMax:profile.die+stats.con.mod+(level-1)*Math.max(1,Math.floor(profile.die/2)+1+stats.con.mod),hitDice:level+'d'+profile.die,hitDie:profile.die,temp:Number(value(s.vitality?.['hp-temp'])||0)};
@@ -126,8 +135,9 @@
   const weaknessEffect=config.weaknessEffect??(effectStart>=0?weakness.slice(effectStart).trim():'');
   return {identity:{name:source.name,className,species,lineage:f.subrace||'',background:value(s.info.background)||f.background||'',playerName:value(s.info.playerName),size:value(s.info.size)==='small'?'Маленький':'Средний'},level,profile,abilities:stats,pb,skills,expertise,
    movement:{feet:speed,cells:speed/5,boostedCells:(speed+10)/5},combat:{ac:armor(source,stats,config),initiative:signed(stats.dex.mod+(alert?pb:0)),passivePerception:10+skills.perception.total,darkvisionCells:Number(value(s.vitality?.darkvision)||0)/5},vitality,
-   spellcasting:{ability:ABILITIES[profile.ability],mod:spellmod,dc:8+pb+spellmod,attack:pb+spellmod,attackSigned:signed(pb+spellmod),slots:profile.slots[level-1],cantrips,prepared,spellbook},
-   resources:{inspiration:Math.max(1,stats.cha.mod),tinkering:Math.max(1,stats.int.mod)},
+   spellcasting:{ability:ABILITIES[profile.ability],mod:spellmod,modSigned:signed(spellmod),dc:8+pb+spellmod,attack:pb+spellmod,attackSigned:signed(pb+spellmod),slots:profile.slots[level-1],cantrips,prepared,spellbook},
+   resources:{inspiration:Math.max(1,stats.cha.mod),tinkering:Math.max(1,stats.int.mod),...(species==='Шифтер (Зверолюд)'?{shiftingTemp:2*pb}:{}),...(druid&&level===2?{wildShape:2}:{})},
+   ...(druid?{druid:{magician,natureBonus,forms:state.wildShapeForms||[],originCantrips,originSpell:originMagic?.spell,originAbility:ABILITIES[originMagic?.ability],originMod:stats[originMagic?.ability]?.mod,originDc:8+pb+(stats[originMagic?.ability]?.mod??0),originAttackSigned:signed(pb+(stats[originMagic?.ability]?.mod??0))}}:{}),
    narrative:{hook:f.characterHook||plain(s.text?.['notes-1']?.value?.data),reason:f.characterReason||plain(s.text?.quests?.value?.data),past:f.characterPast||plain(s.text?.background?.value?.data),weakness:effectStart>=0?weakness.slice(0,effectStart).trim():weakness,weaknessEffect,appearance:f.appearance||plain(s.text?.appearance?.value?.data)},
    equipment,weaponRows,weaponProficiencies:[['Простое оружие',Boolean(value(s.prof?.['weapon-simple']))],['Воинское оружие',Boolean(value(s.prof?.['weapon-martial']))]],coins:Object.entries(coinNames).map(([key,label])=>[label,Number(value(s.coins?.[key])||0)]),proficiencies:plain(s.text?.prof?.value?.data),
    materials:{identifyNote:equipment.some(x=>/жемчуж/i.test(x))?'Проверьте, что записанная жемчужина стоит не менее 100 зм.':'В записанном инвентаре нет жемчужины для этого заклинания.'},
@@ -150,16 +160,16 @@
  function actionLabel(sp){const t=String(sp.castingTime||'');if(t.startsWith('Действие'))return 'Основное действие';if(t.startsWith('Бонусное действие'))return 'Бонусное действие';if(t.startsWith('Реакция'))return 'Реакция';return 'Вне боя';}
  function isRitual(sp){return /ритуал/i.test(sp.castingTime)||/ритуал/i.test(sp.school);}
  function costLabel(sp){
-  if(sp.level===0)return 'без затрат';
+  if(sp.level===0)return 'бесплатно';
   return 'ячейка '+sp.level+'-го уровня'+(isRitual(sp)?' или ритуал (без ячейки)':'');
  }
  function costMark(sp){
-  if(sp.level===0)return null;
+  if(sp.level===0)return 'бесплатно';
   return isRitual(sp)?'ячейка · ритуал':'ячейка';
  }
- function spellBlock(key,catalog){
+ function spellBlock(key,catalog,freeCasting=false){
   const sp=catalog[key],duration=String(sp.duration||''),concentrationTag=/^Концентрация(?:\s*[,;:]\s*|\s+|$)/i;
-  return {title:sp.name,cost:costMark(sp),paragraphs:[`<b>Концентрация:</b> ${concentrationTag.test(duration)?'да':'нет'}<br><b>${actionLabel(sp)} · ${costLabel(sp)}.</b> ${sp.level===0?'Заговор':'Уровень '+sp.level} · ${sp.school}<br><b>Сотворение:</b> ${sp.castingTime} · <b>Дистанция:</b> ${sp.range}<br><b>Компоненты:</b> ${components(sp.components)}<br><b>Длительность:</b> ${withTurns(duration.replace(concentrationTag,''))}`,...sp.body.matchAll(/<p>(.*?)<\/p>/gs)].map(x=>Array.isArray(x)?x[1]:x)};
+  return {title:sp.name,cost:freeCasting?'бесплатно':costMark(sp),paragraphs:[`<b>Концентрация:</b> ${concentrationTag.test(duration)?'да':'нет'}<br><b>${actionLabel(sp)} · ${freeCasting?'бесплатно':costLabel(sp)}.</b> ${sp.level===0?'Заговор':'Уровень '+sp.level} · ${sp.school}<br><b>Сотворение:</b> ${sp.castingTime} · <b>Дистанция:</b> ${sp.range}<br><b>Компоненты:</b> ${components(sp.components)}<br><b>Длительность:</b> ${withTurns(duration.replace(concentrationTag,''))}`,...sp.body.matchAll(/<p>(.*?)<\/p>/gs)].map(x=>Array.isArray(x)?x[1]:x)};
  }
  function summaryOf(sp,dc){
   if(sp.summary)return sp.summary.replaceAll('{{spellcasting.dc}}',String(dc));
@@ -170,18 +180,28 @@
   const categories=[['Доспех и оружие',/доспех|щит|кинжал|нож|меч|топор|булава|посох|копь[её]|секир|лук|арбалет|дубинк|палиц/i],['Инструменты',/инструмент/i]];
   const groups={};
   for(const line of c.equipment){
-   // Weapons already live in the «Атаки» table; do not repeat them in the inventory.
-   if(c.weaponRows.some(w=>line===w.name||line.startsWith(w.name+' ')))continue;
-   const name=categories.find(([,re])=>re.test(line))?.[0]||'Походное снаряжение';(groups[name]??=[]).push(line);
+   let item=line;
+   let category=categories.find(([,pattern])=>pattern.test(line))?.[0]||'Походное снаряжение';
+   for(const weapon of c.weaponRows){
+    const {hands,inventoryName}=WEAPONS[weapon.rule];
+    const alias=inventoryName&&line.match(inventoryName);
+    const index=alias?.index??line.toLowerCase().indexOf(weapon.name.toLowerCase());
+    if(index<0)continue;
+    const end=index+(alias?.[0].length??weapon.name.length);
+    item=line.slice(0,end)+' ('+hands+')'+line.slice(end);
+    category='Доспех и оружие';
+    break;
+   }
+   (groups[category]??=[]).push(item);
   }
   const money='Деньги на старте: '+(c.coins.filter(([,amount])=>amount!==0).map(([label,amount])=>amount+' '+label).join(', ')||'0 зм')+'.';
   return [...Object.entries(groups).map(([name,items])=>`<b>${name}:</b> ${items.join('; ')}.`),money];
  }
  function mainPages(ctx,source,config,catalog){
   const c=ctx,kind=c.profile.kind;
-  const classFeature=turnAware({...((kind==='bard')?block('Бардовское вдохновение','<b>Бонусное действие · тратит 1 использование из {{resources.inspiration}} за долгий отдых.</b> Другое существо в пределах 60 футов, которое видит или слышит вас, получает кость d6 на 1 час. У существа одновременно может быть только одна такая кость.','В течение этого часа после провала проверки характеристики, броска атаки или спасброска существо может бросить d6 и прибавить результат к броску d20. Кость расходуется при броске.'):(kind==='wizard')?block('Знаток ритуалов','<b>Пассивно · без затрат.</b> Ритуальные заклинания можно сотворять ритуалом из книги заклинаний, даже если они не подготовлены; во время сотворения читайте их из книги.'):block('Магия вещей','<b>Основное действие (действие Магия) · тратит 1 использование из {{resources.tinkering}} за долгий отдых.</b> Инструменты ремонтника в руке. Создайте один разрешённый обычный предмет в свободном месте в пределах 5 футов. Он существует до вашего следующего долгого отдыха.','Блок и лебёдка, кувшин, свеча, бумага, лампа, сеть, ведро, леска, спальник, верёвка, ломик, бутылка, шипы, лопата, трутница, калтропы, масло, факел, кандалы, металлические шарики, флакон, колокольчик, мешок, фляга, корзина, одеяло, шест, кошель, капкан, крюк-кошка, пергамент.')),cost:kind==='wizard'?null:'использование'});
-  const spellUsage={...block('Использование заклинаний','<b>{{spellcasting.ability}} {{spellcasting.mod}} · Сл {{spellcasting.dc}} · атака {{spellcasting.attackSigned}}.</b> Ячейки восстанавливаются после долгого отдыха. Список подготовленных заклинаний после отдыха остаётся прежним. Заговоры ячеек не расходуют.',kind==='bard'?'Музыкальный инструмент служит фокусировкой заклинаний барда. При повышении уровня можно заменить один подготовленный спелл и один заговор на допустимые.':kind==='wizard'?'Магическая фокусировка заменяет недорогие материальные компоненты; материалы с указанной стоимостью и расходуемые — нет.':'Держите в руке воровские инструменты, инструменты ремонтника или освоенные ремесленные инструменты: это обязательная материальная фокусировка классовых заклинаний. Дорогие и расходуемые материалы всё равно нужны. После долгого отдыха можно заменить один классовый заговор.','<b>Компоненты:</b> Вербальный — произнесение магических слов; Соматический — жесты рукой; Материальный — указанный предмет или допустимая фокусировка. Нужны все перечисленные; материалы с указанной стоимостью и расходуемые фокусировкой не заменяются.'),summary:true};
-  const species=c.identity.species==='Человек'?block('Человек',
+  const classFeature=kind==='druid'?block('Первобытный орден · '+(c.druid.magician?'Ведун':'Хранитель'),c.druid.magician?'<b>Пассивно · без затрат.</b> Один дополнительный заговор друида. К проверкам Интеллекта (Магия или Природа) добавляется модификатор Мудрости (минимум +1). Прибавка уже включена в таблицу навыков.':'<b>Пассивно · без затрат.</b> Владение воинским оружием и средними доспехами.'):turnAware({...((kind==='bard')?block('Бардовское вдохновение','<b>Бонусное действие · тратит 1 использование из {{resources.inspiration}} за долгий отдых.</b> Другое существо в пределах 60 футов, которое видит или слышит вас, получает кость d6 на 1 час. У существа одновременно может быть только одна такая кость.','В течение этого часа после провала проверки характеристики, броска атаки или спасброска существо может бросить d6 и прибавить результат к броску d20. Кость расходуется при броске.'):(kind==='wizard')?block('Знаток ритуалов','<b>Пассивно · без затрат.</b> Ритуальные заклинания можно сотворять ритуалом из книги заклинаний, даже если они не подготовлены; во время сотворения читайте их из книги.'):block('Магия вещей','<b>Основное действие (действие Магия) · тратит 1 использование из {{resources.tinkering}} за долгий отдых.</b> Инструменты ремонтника в руке. Создайте один разрешённый обычный предмет в свободном месте в пределах 5 футов. Он существует до вашего следующего долгого отдыха.','Блок и лебёдка, кувшин, свеча, бумага, лампа, сеть, ведро, леска, спальник, верёвка, ломик, бутылка, шипы, лопата, трутница, калтропы, масло, факел, кандалы, металлические шарики, флакон, колокольчик, мешок, фляга, корзина, одеяло, шест, кошель, капкан, крюк-кошка, пергамент.')),cost:kind==='wizard'?null:'использование'});
+  const spellUsage={...block('Использование заклинаний','<b>{{spellcasting.ability}} (модификатор {{spellcasting.modSigned}}) · Сл {{spellcasting.dc}} · атака d20 {{spellcasting.attackSigned}}.</b> Ячейки восстанавливаются после долгого отдыха. Список подготовленных заклинаний после отдыха остаётся прежним. Заговоры ячеек не расходуют.','<b>Вне боя ритуал отыгрывается практически мгновенно.</b> За столом ожидание пропускается, а в игровом мире проходит указанное время сотворения.',kind==='bard'?'Музыкальный инструмент служит фокусировкой заклинаний барда. При повышении уровня можно заменить один подготовленный спелл и один заговор на допустимые.':kind==='wizard'?'Магическая фокусировка заменяет недорогие материальные компоненты; материалы с указанной стоимостью и расходуемые — нет.':kind==='druid'?'Друидическая фокусировка заменяет недорогие материальные компоненты. Подготовленное заклинание с пометкой «Ритуал» можно сотворить без ячейки, добавив 10 минут к обычному времени сотворения. При получении уровня друида можно заменить один заговор друида другим из его списка.':'Держите в руке воровские инструменты, инструменты ремонтника или освоенные ремесленные инструменты: это обязательная материальная фокусировка классовых заклинаний. Дорогие и расходуемые материалы всё равно нужны. После долгого отдыха можно заменить один классовый заговор.','<b>Компоненты:</b> Вербальный — произнесение магических слов; Соматический — жесты рукой; Материальный — указанный предмет или допустимая фокусировка. Нужны все перечисленные; материалы с указанной стоимостью и расходуемые фокусировкой не заменяются.'),summary:true};
+  const species=c.identity.species==='Шифтер (Зверолюд)'&&c.identity.lineage==='Быстроноги'?shifterBlock():c.identity.species==='Человек'?block('Человек',
    '<b>Находчивый.</b> После долгого отдыха получаете Героическое вдохновение. Потратьте его сразу после броска любой кости, чтобы перебросить её и использовать новый результат. Если вдохновение уже есть, новое можно передать другому персонажу игрока, у которого его нет.',
    '<b>Умелый.</b> Одно дополнительное владение навыком.',
    '<b>Гибкий.</b> Дополнительная черта происхождения.'
@@ -190,9 +210,10 @@
    'При броске инициативы прибавьте бонус владения. Эта прибавка уже учтена в боевых показателях.',
    'Сразу после броска можно обменяться итогом инициативы с одним согласным союзником в том же бою, если оба дееспособны.'
   );
+  const originText=plain(source.sheet.text?.feats?.value?.data).trim();
   const origin=c.feats.skilled?null:c.feats.crafter?block('Происхождение · Мастеровой',
    '<b>{{identity.background}}.</b> Скидка 20% на немагические покупки. После долгого отдыха можно изготовить один предмет, распадающийся после следующего отдыха; инструменты должны быть у вас и освоены.'
-  ):textBlock('Происхождение',c.identity.background,plain(source.sheet.text?.feats?.value?.data));
+  ):originText?textBlock('Происхождение',c.identity.background,originText):null;
   const skillRows=[];
   for(const [code,name] of Object.entries(ABILITIES)){
    skillRows.push({header:`${name} ${c.abilities[code].signed}`});
@@ -203,7 +224,7 @@
   if(c.combat.darkvisionCells>0)combatRows.push(['Тёмное зрение',c.combat.darkvisionCells+' клет.']);
   combatRows.push(['Размер',c.identity.size],['Максимум хитов',c.vitality.hpMax],['Ячейки 1-го уровня',c.spellcasting.slots],['Пассивное Восприятие',c.combat.passivePerception]);
   const combatBlock={...table('Боевые показатели',combatRows),paragraphs:['Долгий отдых возвращает все хиты, ячейки заклинаний и использования способностей.'],summary:true};
-  const attacksBlock={...table('Атаки',c.weaponRows.map(w=>[w.name,w.attackType,w.attackFormula,w.damage,w.type]),['Оружие','Тип атаки','Атака','Урон','Тип урона']),paragraphs:['ЛОВ — модификатор Ловкости; СИЛ — Силы; НАВ — бонус владения этим оружием (без владения 0); МАГ — магическая прибавка. Бросьте d20 и прибавьте каждое число из формулы один раз.']};
+  const attacksBlock={...table('Атаки',c.weaponRows.map(w=>[w.name,w.attackType,w.attackFormula,w.damage,w.type]),['Оружие','Тип атаки','Атака','Урон','Тип урона']),paragraphs:['ЛОВ — модификатор Ловкости; СИЛ — Силы; НАВ — бонус владения этим оружием (без владения 0); МАГ — магическая прибавка. Бросьте d20 и прибавьте каждое число из формулы один раз.',...(kind==='druid'&&c.weaponRows.some(w=>w.rule==='quarterstaff')?['Боевой посох в двух руках: 1d8'+(c.abilities.str.mod?signed(c.abilities.str.mod):'')+' дробящего урона. Со щитом посох держат одной рукой.']:[])]};
   const characterBlock=textBlock('Характер',c.narrative.hook,c.narrative.reason,c.narrative.past,c.narrative.weakness);
   if(c.narrative.weaknessEffect)characterBlock.paragraphs=['<i>{{narrative.weaknessEffect}}</i>'];
   const page={title:c.identity.name,subtitle:`${c.identity.species} · ${c.identity.className} ${c.level}-го уровня · ${c.identity.background}`,label:'Основной лист · '+c.level+'-й уровень',badge:'',ctx:c,scores:Object.values(c.abilities).map(x=>({name:x.name,score:x.score,mod:x.signed})),columns:[
@@ -211,9 +232,15 @@
    [attacksBlock,species,...(c.feats.alert?[alertFeature]:[]),...(origin?[origin]:[]),characterBlock]
   ]};
   const gear={title:c.identity.name+' · владения и снаряжение',subtitle:'',label:'Снаряжение · '+c.level+'-й уровень',badge:'',ctx:c,columns:[
-   [{...block('Владения и языки',c.proficiencies,'Оружие: '+c.weaponProficiencies.map(([name,owned])=>name.toLowerCase()+' — '+(owned?'владение есть':'нет')).join('; ')+'. Владение конкретным оружием видно по НАВ в формуле атаки.'),summary:true},block('Снаряжение',...equipmentParagraphs(c))],
+   [{...block('Владения и языки',c.proficiencies,...(kind==='druid'?[c.druid.magician?'Доспехи: лёгкие доспехи и щиты.':'Доспехи: лёгкие и средние доспехи, щиты.']:[]),'Оружие: '+c.weaponProficiencies.map(([name,owned])=>name.toLowerCase()+' — '+(owned?'владение есть':'нет')).join('; ')+'. Владение конкретным оружием видно по НАВ в формуле атаки.'),summary:true},block('Снаряжение',...equipmentParagraphs(c))],
    [...(kind==='artificer'?[table('Быстрое изготовление · освоенные наборы',[['Плотника','Лестница, факел'],['Резчика','Дубинка, палица, посох'],['Каменщика','Блок и лебёдка'],['Кузнеца','Шарики, ведро, калтропы, крюк, котёл'],['Ремонтника','Колокольчик, лопата, трутница']].filter(([name])=>c.selections.tools.some(x=>x.toLowerCase().includes(name.toLowerCase()))||name==='Ремонтника'))]:[]),...(config.equipmentProfiles?.length?[block('Профили оружия',...config.equipmentProfiles.map(x=>`${x.match}: профиль ${WEAPONS[x.rule]?.name||x.rule}; владение — ${x.proficient?'да':'не подтверждено'}; магическая прибавка ${signed(x.magicBonus||0)}. Профиль — согласованное решение для предмета без характеристик в исходных данных.`))]:[])]
   ]};
+  if(kind==='druid'){
+   const speakWithAnimals={...spellBlock('speak-with-animals',catalog),cost:'бесплатно ритуалом'};
+   gear.columns[1].push(block('Друидический язык',
+    '<b>Пассивно · без затрат.</b> Можете оставлять скрытые сообщения на друидическом языке. Знающие язык замечают их автоматически. Остальным для обнаружения нужна проверка Интеллекта (Анализ) Сл 15. Без магии они не могут расшифровать сообщение.',
+    '«Разговор с животными» всегда подготовлен и не занимает место в списке подготовленных заклинаний друида.'),speakWithAnimals);
+  }
   if(c.spellcasting.spellbook.length){
    const bookRows=c.spellcasting.spellbook.map(key=>{
     const spell=catalog[key];
@@ -226,7 +253,34 @@
   const spellPage={title:'Способности и заклинания · '+c.identity.name,subtitle:`${c.identity.className} ${c.level}-го уровня · заговоров ${c.spellcasting.cantrips.length} · подготовлено ${c.spellcasting.prepared.length}`,label:'Способности и заклинания · '+c.level+'-й уровень',badge:'',ctx:c,columns:[[],[]]};
   spellPage.columns[0].push({...table('Заклинания · краткий список',[...c.spellcasting.cantrips,...c.spellcasting.prepared].map(k=>{const sp=catalog[k];return [sp.name+(sp.level===0?' · заговор':' · '+sp.level+'-й ур.'),summaryOf(sp,c.spellcasting.dc),String(sp.castingTime).split(';')[0]];}),['Заклинание','Суть','Время']),summary:true},spellUsage,classFeature);
   let weights=[JSON.stringify(spellPage.columns[0]).length,0];for(const sp of all){const col=weights[0]<=weights[1]?0:1;spellPage.columns[col].push(sp);weights[col]+=JSON.stringify(sp).length;}
-  return [page,spellPage,gear];
+  return [page,spellPage,...(c.druid?.originSpell?[druidOriginPage(c,catalog)]:[]),gear];
+ }
+ function shifterBlock(){
+  return {...turnAware(block('Шифтер · Быстроноги',
+   '<b>Тип:</b> Гуманоид. <b>Звериные инстинкты:</b> владение выбранным навыком ({{selections.speciesSkills}}). <b>Тёмное зрение:</b> в тусклом свете видите как при ярком, в темноте — как при тусклом, оттенками серого.',
+   '<b>Переворот · бонусное действие · тратит 1 использование из {{pb}}.</b> Принимаете звероподобный облик на 1 минуту и получаете {{resources.shiftingTemp}} временных хита (удвоенный бонус владения). Можете вернуться в обычный облик бонусным действием. Все использования восстанавливаются после долгого отдыха.',
+   '<b>Быстроноги:</b> пока действует Переворот, скорость увеличивается до {{movement.boostedCells}} клет. Когда существо заканчивает ход в 1 клет. от вас, можете реакцией переместиться на расстояние до 2 клет. Это перемещение не провоцирует атаки.')),cost:'использование'};
+ }
+ function druidOriginPage(c,catalog){
+  const spellcasting={...c.spellcasting,ability:c.druid.originAbility,mod:c.druid.originMod,dc:c.druid.originDc,attackSigned:c.druid.originAttackSigned};
+  const cantrips=c.druid.originCantrips.map(key=>spellBlock(key,catalog));
+  const spell=spellBlock(c.druid.originSpell,catalog,true);
+  const feature=block('Посвящённый в магию · Жрец',
+   '<b>Послушник.</b> Два заговора жреца и одно всегда подготовленное заклинание 1-го уровня. Заклинательная характеристика — {{spellcasting.ability}}, Сл {{spellcasting.dc}}. Заговоры и заклинание черты учитываются отдельно от списка друида.',
+   'Выбранное заклинание 1-го уровня можно сотворить один раз без ячейки с восстановлением после долгого отдыха. Его также можно сотворять имеющимися ячейками. Бесплатное сотворение всё равно требует указанных компонентов.');
+  return {title:'Магия послушника · '+c.identity.name,subtitle:'',label:'Происхождение · 1-й уровень',badge:'',ctx:{...c,spellcasting},columns:[[feature,...cantrips],[spell]]};
+ }
+ function druidShapePage(c){
+  const shape={...turnAware(block('Дикий облик',
+   '<b>Бонусное действие · тратит 1 использование из {{resources.wildShape}}.</b> Превратитесь в известного зверя на 1 час и получите {{level}} временных хита. Все использования восстанавливаются после долгого отдыха. Облик заканчивается при повторном использовании, состоянии «Недееспособный», смерти или добровольном возвращении бонусным действием.',
+   '<b>Известные облики:</b> '+c.druid.forms.join(', ')+'. Можно знать четыре облика зверей с опасностью до 1/4 без скорости полёта. После долгого отдыха можно заменить один облик другим подходящим.',
+   'Используйте показатели зверя, сохраняя тип существа, хиты, Интеллект, Мудрость, Харизму, личность, память, речь, языки, классовые особенности, черты и свои владения навыками и спасбросками. Получаете также владения зверя. Если его бонус к навыку или спасброску выше вашего, используйте его.',
+   'В облике нельзя сотворять заклинания, но можно поддерживать концентрацию. Обращение с предметами зависит от анатомии зверя. Снаряжение можно оставить на земле, слить с обликом или носить, если оно подходит. Слившееся с обликом снаряжение не действует.')),cost:'использование'};
+  const companion={...block('Дикий спутник',
+   '<b>Концентрация:</b> нет. <b>Основное действие (Магия) · ячейка или 1 использование Дикого облика.</b> Сотворите «Обретение фамильяра» без материальных компонентов. Фамильяр — Фея в зверином облике, исчезает после вашего долгого отдыха.',
+   'Фамильяр появляется в свободном месте в пределах 2 клет. в облике зверя с опасностью 0. Он действует по собственной инициативе, выполняет ваши команды и не может атаковать. В пределах 20 клет. с ним можно общаться телепатически. Бонусным действием можно видеть и слышать его чувствами до начала вашего следующего хода. Он может реакцией передать заклинание с дистанцией «Касание», если находится в пределах 20 клет. от вас.',
+   'При 0 хитов фамильяр исчезает. Действием Магия его можно отпустить или временно убрать в карманное измерение и таким же действием вернуть в свободное место в пределах 6 клет. При исчезновении он оставляет снаряжение. У вас может быть только один фамильяр. Повторное сотворение позволяет сменить его облик.'),cost:'ячейка · использование'};
+  return {title:c.identity.name+' · Дикий облик и спутник',subtitle:'Классовые способности друида',label:'Повышение уровня · 2-й уровень',badge:' · 2-й уровень',ctx:c,columns:[[shape],[companion]]};
  }
  function advancement(base,next,source,config,catalog){
   const changed=Object.keys(SKILLS).filter(k=>base.skills[k].total!==next.skills[k].total);
@@ -240,6 +294,7 @@
   next.expertiseNames=next.expertise.join(', ');next.halfProficiency=Math.floor(next.pb/2);next.scholarName=config.wizardScholar||'';next.plansCount=next.selections.plans.length;next.planNames=next.selections.plans.map(x=>x.scheme+(x.detail?': '+x.detail:'')).join('; ');next.activeNames=next.selections.active.join('; ')||'не записаны';
   const right=[...fresh.map(k=>spellBlock(k,catalog)),{...block('Без изменений','КД, инициатива, скорость, тёмное зрение, Сл и атака магии, характеристики и число заговоров при этом переходе не меняются — смотрите основной лист.'),summary:true}];
   const pages=[{title:next.identity.name+' · 2-й уровень',subtitle:'Изменения к основному листу 1-го уровня',label:'Повышение уровня · 1 → 2',badge:' · 2-й уровень',ctx:next,columns:[left,right]}];
+  if(next.profile.kind==='druid')pages.push(druidShapePage(next));
   if(next.profile.kind==='artificer'){
    const itemBlocks=next.selections.plans.map(plan=>{
     const rule=config.itemRules?.[plan.scheme];

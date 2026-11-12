@@ -1,0 +1,18 @@
+{
+  "sourceSha256": "a2fee02eba515582d888ab7bc6c6ddaa6fafba2d8d7d9296a81771121240d47a",
+  "characterName": "Неттлин",
+  "rulesEdition": "2024",
+  "sources": [
+    "https://www.dndbeyond.com/sources/dnd/br-2024/character-classes#Druid",
+    "https://www.dndbeyond.com/sources/dnd/br-2024/feats#MagicInitiate",
+    "https://www.dndbeyond.com/sources/dnd/br-2024/spell-descriptions",
+    "https://www.dndbeyond.com/posts/2017-how-eberron-forge-of-the-artificer-reimagines"
+  ],
+  "notes": [
+    "«Скороход» считается добавленным на 2-м уровне, поскольку стоит последним в списке подготовленных заклинаний друида. Экспорт не помечает уровень получения.",
+    "По просьбе пользователя для нераспознанного заговора жреца выбрано «Наставление». «Слово сияния» и «Благословение» сохранены из экспорта.",
+    "Щит есть в снаряжении, но не надет. КД 12 без щита, 14 со щитом. Для слабости из генератора применён её согласованный эффект.",
+    "На листе отражено принятое в кампании восстановление после долгого отдыха и фиксированный список подготовленных заклинаний."
+  ],
+  "pipeline": "source JSON -> calculated character.json -> HTML templates in browser"
+}

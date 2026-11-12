@@ -64,7 +64,7 @@ const rest=sections.find(b=>b.title==='Боевые показатели').parag
 assert.match(rest,/Долгий отдых/);
 assert.doesNotMatch(rest,/коротк|кости хитов/i);
 assert(sections.find(b=>b.title==='Героизм').paragraphs[0].startsWith('<b>Концентрация:</b> да<br><b>Основное действие · ячейка 1-го уровня.</b>'));
-assert(sections.find(b=>b.title==='Дружба').paragraphs[0].startsWith('<b>Концентрация:</b> да<br><b>Основное действие · без затрат.</b>'));
+assert(sections.find(b=>b.title==='Дружба').paragraphs[0].startsWith('<b>Концентрация:</b> да<br><b>Основное действие · бесплатно.</b>'));
 assert(sections.find(b=>b.title==='Невидимый слуга').paragraphs[0].startsWith('<b>Концентрация:</b> нет<br><b>Основное действие · ячейка 1-го уровня или ритуал (без ячейки).</b>'));
 assert(sections.find(b=>b.title==='Героизм').paragraphs[0].includes('Длительность:</b> до 1 минуты (10 ходов)'));
 assert(sections.find(b=>b.title==='Невидимый слуга').paragraphs[0].includes('Длительность:</b> 1 час (600 ходов)'));
@@ -73,7 +73,7 @@ assert(sections.find(b=>b.title==='Бардовское вдохновение')
 assert.equal(sections.find(b=>b.title==='Героизм').cost,'ячейка');
 assert.equal(sections.find(b=>b.title==='Невидимый слуга').cost,'ячейка · ритуал');
 assert.equal(sections.find(b=>b.title==='Бардовское вдохновение').cost,'использование');
-assert(sections.find(b=>b.title==='Дружба').cost==null,'у заговоров отметки нет');
+assert.equal(sections.find(b=>b.title==='Дружба').cost,'бесплатно');
 assert(sections.find(b=>b.title==='Бардовское вдохновение').paragraphs[0].includes('кость d6 на 1 час (600 ходов)'));
 assert.match(sections.find(b=>b.title==='Бардовское вдохновение').paragraphs[1],/после провала проверки характеристики, броска атаки или спасброска/);
 assert.equal(E.withTurns('До 1 часа'), 'До 1 часа (600 ходов)');
@@ -121,7 +121,7 @@ assert.match(book.rows.find(row=>row[0].startsWith('Огненные ладон�
 assert(book.rows.every(row=>row[1]));
 assert(wsections.find(b=>b.title==='Высший эльф').paragraphs.join(' ').includes('Транс'));
 assert(wsections.find(b=>b.title==='Знаток ритуалов').paragraphs[0].startsWith('<b>Пассивно · без затрат.</b>')&&wsections.find(b=>b.title==='Знаток ритуалов').cost==null);
-assert(wsections.find(b=>b.title==='Огненный снаряд').paragraphs[0].startsWith('<b>Концентрация:</b> нет<br><b>Основное действие · без затрат.</b>'));
+assert(wsections.find(b=>b.title==='Огненный снаряд').paragraphs[0].startsWith('<b>Концентрация:</b> нет<br><b>Основное действие · бесплатно.</b>'));
 assert(wsections.find(b=>b.title==='Доспехи мага').cost==='ячейка');
 assert(third.appendix[0].columns.flat().some(b=>b.title==='Учёный'&&b.paragraphs[0].includes('{{scholarName}}')));
 assert(third.appendix[0].columns.flat().some(b=>b.title==='Ледяной кинжал'));

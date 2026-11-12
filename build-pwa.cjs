@@ -6,6 +6,7 @@ const root = __dirname;
 const files = [
   'index.html', 'party.html', 'character-generator.html', 'class-quiz.html', 'manifest.webmanifest', 'pwa.js',
   'assets/favicon.ico', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/D12.svg',
+  'assets/party-icon.svg', 'assets/quiz-icon.svg',
   'assets/fonts/CormorantSC-SemiBold.ttf',
   'assets/aelt-profile.png', 'assets/naestriel-profile.png', 'assets/nettlin-profile.png', 'assets/vega-profile.png',
   'character-sheets/styles.css', 'character-sheets/sheet-engine.js',

@@ -139,7 +139,7 @@
    resources:{inspiration:Math.max(1,stats.cha.mod),tinkering:Math.max(1,stats.int.mod),...(species==='Шифтер (Зверолюд)'?{shiftingTemp:2*pb}:{}),...(druid&&level===2?{wildShape:2}:{})},
    ...(druid?{druid:{magician,natureBonus,forms:state.wildShapeForms||[],originCantrips,originSpell:originMagic?.spell,originAbility:ABILITIES[originMagic?.ability],originMod:stats[originMagic?.ability]?.mod,originDc:8+pb+(stats[originMagic?.ability]?.mod??0),originAttackSigned:signed(pb+(stats[originMagic?.ability]?.mod??0))}}:{}),
    narrative:{hook:f.characterHook||plain(s.text?.['notes-1']?.value?.data),reason:f.characterReason||plain(s.text?.quests?.value?.data),past:f.characterPast||plain(s.text?.background?.value?.data),weakness:effectStart>=0?weakness.slice(0,effectStart).trim():weakness,weaknessEffect,appearance:f.appearance||plain(s.text?.appearance?.value?.data)},
-   equipment,weaponRows,weaponProficiencies:[['Простое оружие',Boolean(value(s.prof?.['weapon-simple']))],['Воинское оружие',Boolean(value(s.prof?.['weapon-martial']))]],coins:Object.entries(coinNames).map(([key,label])=>[label,Number(value(s.coins?.[key])||0)]),proficiencies:plain(s.text?.prof?.value?.data),
+   equipment,weaponRows,weaponProficiencies:[['Простое оружие',Boolean(value(s.prof?.['weapon-simple']))],['Воинское оружие',Boolean(value(s.prof?.['weapon-martial']))]],coins:Object.entries(coinNames).map(([key,label])=>[label,Number(config.startingCoins?.[key]??value(s.coins?.[key]))]),proficiencies:plain(s.text?.prof?.value?.data),
    materials:{identifyNote:equipment.some(x=>/жемчуж/i.test(x))?'Проверьте, что записанная жемчужина стоит не менее 100 зм.':'В записанном инвентаре нет жемчужины для этого заклинания.'},
    selections:{speciesSkills:selectedFields(f,'speciesSkill').join(', '),skilled:selectedFields(f,'originSkilled').map(x=>x.replace(/^skill:/,'')).join(', '),tools:selectedFields(f,'tool'),backgroundBonuses:Object.entries(state.backgroundBonuses||{}).filter(([,n])=>n).map(([k,n])=>ABILITIES[k]+' '+signed(n)).join(', '),plans:jsonField(f.classDecision1,[]),active:jsonField(f.classDecision2,[])},rock,
    feats:{skilled:/Одар[её]нный/i.test(featText),crafter:/Мастеровой/i.test(featText),alert},
@@ -247,6 +247,9 @@
     return [spell.name+' · '+spell.level+'-й ур.',summaryOf(spell,c.spellcasting.dc),c.spellcasting.prepared.includes(key)?'Да':'Нет',isRitual(spell)?'Да':'Нет'];
    });
    gear.columns[1].push({...table('Книга заклинаний',bookRows,['Заклинание','Краткий эффект','Подгот.','Ритуал']),summary:true});
+  }
+  if(config.gearColumns===2&&gear.columns[1].length===0){
+   gear.columns[1].push(gear.columns[0].pop());
   }
   gear.columns=gear.columns.filter(column=>column.length);
   const all=[...c.spellcasting.cantrips,...c.spellcasting.prepared].map(k=>spellBlock(k,catalog));

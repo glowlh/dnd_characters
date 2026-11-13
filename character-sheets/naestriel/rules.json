@@ -1,5 +1,6 @@
 {
   "rulesEdition": "2024",
+  "gearColumns": 2,
   "level2Spell": "command",
   "weaknessEffect": "Из-за частичной потери памяти Наэстриель совершает проверки Интеллекта (История) с помехой.",
   "equipmentProfiles": [],
